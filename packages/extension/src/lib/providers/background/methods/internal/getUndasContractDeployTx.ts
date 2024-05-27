@@ -21,20 +21,14 @@ export const getUndasContractDeployTx: BackgroundOnMessageCallback<
     'selectedAccount'
   );
 
-  const privateKey = selectedAccount?.privateKey;
+  if (!selectedAccount) throw new Error('Selected account is not set');
 
-  const currNetwork = await getCurrentNetwork();
-
-  const signer = new ethers.Wallet(privateKey ?? '', currNetwork.rpcProvider);
-
-  // TODO: use wallet factory instead
   const factory = new ContractFactory(
     Wallet__factory.abi,
-    '0x608060', //Wallet__factory.bytecode,
-    signer
+    '0x608060' //Wallet__factory.bytecode,
   ) as Wallet__factory;
 
-  const deployTx = factory.getDeployTransaction(signer.address);
+  const deployTx = factory.getDeployTransaction(selectedAccount.address);
   console.log('Deploy tx', deployTx);
 
   return deployTx;

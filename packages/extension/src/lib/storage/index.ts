@@ -3,6 +3,7 @@ import LocalForage from './local-forage';
 
 export enum StorageNamespaces {
   CONNECTED_DOMAINS = 'connected-domains',
+  COMMON = 'common',
   USER_ADDRESSES = 'user-addresses',
   USER_WALLETS = 'user-wallets',
   USER_TRANSACTIONS_HISTORY = 'user-tx-history',
