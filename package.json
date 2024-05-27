@@ -1,0 +1,37 @@
+{
+  "name": "undas-wallet",
+  "version": "4.3.5",
+  "description": "Undas wallet repository",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RedDuck-Software/undas-wallet.git"
+  },
+  "private": true,
+  "workspaces": [
+    "packages/extension"
+  ],
+  "engines": {
+    "node": ">=16.0.0 <17.0.0"
+  },
+  "scripts": {
+    "add:extension": "yarn workspace @undas/extension add",
+    "test": "yarn workspaces foreach -pv run test",
+    "lint": "yarn workspaces foreach run lint",
+    "build:all": "ultra -r build && yarn run codegen",
+    "watch": "concurrently 'npm:watch-*'",
+    "build:extension": "cd packages/extension && npm run build",
+    "start:extension": "cd packages/extension && npm run start",
+    "codegen": "typechain --target=ethers-v5 --out-dir ./packages/extension/src/typechain './packages/extension/src/abi/*.json'"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.0.3",
+    "@commitlint/config-conventional": "^17.0.3",
+    "concurrently": "^7.3.0",
+    "devmoji": "^2.3.0",
+    "husky": "^8.0.1",
+    "node-notifier": "^10.0.1",
+    "nodemon": "^2.0.19",
+    "ultra-runner": "^3.10.5"
+  }
+}
