@@ -173,8 +173,9 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
     to: tx.to,
     gasLimit: bnToHex(tx.gasLimit),
     gasPrice: bnToHex(tx.gasPrice),
-    maxFeePerGas: bnToHex(tx.maxFeePerGas),
-    maxPriorityFeePerGas: bnToHex(tx.maxPriorityFeePerGas),
+    // FIXME
+    // maxFeePerGas: bnToHex(tx.maxFeePerGas),
+    // maxPriorityFeePerGas: bnToHex(tx.maxPriorityFeePerGas),
     value: bnToHex(tx.value),
   });
 
