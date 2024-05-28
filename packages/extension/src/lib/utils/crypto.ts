@@ -1,7 +1,7 @@
 import cryptoJS from 'crypto-js';
 
 export const encryptValue = (message: string, key: string) => {
-  return cryptoJS.AES.decrypt(message, key).toString(cryptoJS.enc.Utf8);
+  return cryptoJS.AES.encrypt(message, key).toString();
 };
 
 export const decryptValue = (ciphertext: string, key: string) => {
@@ -9,5 +9,5 @@ export const decryptValue = (ciphertext: string, key: string) => {
 };
 
 export const hash = (message: string) => {
-  return cryptoJS.SHA3(message).toString(cryptoJS.enc.Utf8);
+  return cryptoJS.SHA3(JSON.stringify({ message })).toString(cryptoJS.enc.Hex);
 };
