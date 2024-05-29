@@ -267,7 +267,7 @@ const MainPage = (props: any) => {
 
   function logOut() {
     setSigner(undefined);
-    setLoggedIn(!loggedIn);
+    setLoggedIn(false);
   }
   console.log('userAccountsuserAccounts', userAccounts);
   return (

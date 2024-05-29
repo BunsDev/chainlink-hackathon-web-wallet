@@ -12,7 +12,7 @@
     "packages/extension"
   ],
   "engines": {
-    "node": ">=16.0.0 <17.0.0"
+    "node": ">=16.0.0"
   },
   "scripts": {
     "add:extension": "yarn workspace @undas/extension add",
