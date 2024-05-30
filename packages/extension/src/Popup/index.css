@@ -46,8 +46,9 @@
   * {
     @apply border-border;
   }
+  html,
   body {
-    @apply bg-white text-foreground w-screen h-screen min-w-[441px] min-h-[600px] flex items-center justify-center;
+    @apply bg-background text-foreground w-screen h-screen min-w-[441px] min-h-[600px] flex items-center justify-center;
     font-feature-settings: 'rlig' 1, 'calt' 1;
   }
 

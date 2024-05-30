@@ -11,6 +11,8 @@
   "dependencies": {
     "@formkit/auto-animate": "^0.8.2",
     "@hot-loader/react-dom": "^17.0.2",
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
+    "@radix-ui/react-popover": "^1.0.7",
     "@radix-ui/react-scroll-area": "^1.0.5",
     "@radix-ui/react-slot": "^1.0.2",
     "@tanstack/react-query": "^5.40.0",
@@ -28,6 +30,7 @@
     "react-chrome-extension-router": "^1.4.0",
     "react-dom": "^18.2.0",
     "react-hot-loader": "^4.13.0",
+    "react-qr-code": "^2.0.13",
     "react-router-dom": "^6.4.1",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",

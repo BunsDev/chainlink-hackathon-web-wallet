@@ -21,6 +21,7 @@ import { CreatePasswordPage } from './pages/create-password-page';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { EnterMnemonicPage } from './pages/enter-mnemonic-page';
 import { HomePage } from './pages/home-page';
+import { GenerateContractPage } from './pages/generate-contract-page';
 
 function Popup() {
   const [queryClient] = useState(() => new QueryClient());
@@ -87,6 +88,10 @@ function Popup() {
               <Route
                 path={'/' + UIRoutes.enterMnemonic.path}
                 element={<EnterMnemonicPage />}
+              />
+              <Route
+                path={'/' + UIRoutes.generateContract.path}
+                element={<GenerateContractPage />}
               />
               <Route
                 path={'/' + UIRoutes.ethSendTransaction.path}

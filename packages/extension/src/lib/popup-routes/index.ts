@@ -69,4 +69,9 @@ export const UIRoutes = {
     name: 'enterMnemonic',
     component: {},
   },
+  generateContract: {
+    path: 'generate-contract',
+    name: 'generateContract',
+    component: {},
+  },
 };
