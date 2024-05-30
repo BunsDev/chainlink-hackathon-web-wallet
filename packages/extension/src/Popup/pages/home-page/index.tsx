@@ -20,11 +20,28 @@ import { useUserAccounts } from '../../hooks/read/use-user-accounts';
 import { useCurrentNetwork } from '../../hooks/read/use-current-network';
 import { useSwitchWallet } from '../../hooks/mutations/use-switch-wallet';
 import { getAddress } from 'ethers/lib/utils';
+import { useAllNetworks } from '../../hooks/read/use-all-networks';
+import { useSwitchNetwork } from '../../hooks/mutations/use-switch-network';
 
 const Header = () => {
   const [networkOpened, setNetworkOpened] = useState(false);
   const { data: currentNetwork } = useCurrentNetwork();
   const { data } = useUserAccounts();
+  const { data: networksData } = useAllNetworks();
+  const { mutateAsync: switchNetwork } = useSwitchNetwork();
+
+  const onNetworkItemClick = useCallback(
+    async (i: any) => {
+      let id = i?.target?.id;
+
+      if (id === networksData?.selectedNetwork?.name) {
+        return;
+      }
+
+      await switchNetwork({ switchTo: id });
+    },
+    [data]
+  );
 
   return (
     <div className="py-[18px] bg-white px-[24px] items-center justify-between shadow-sm flex">
@@ -63,7 +80,15 @@ const Header = () => {
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem>Sepolia</DropdownMenuItem>
+            {networksData?.allNetworks?.map((s) => (
+              <DropdownMenuItem
+                key={s.name}
+                id={s.name}
+                onClick={onNetworkItemClick}
+              >
+                {s.name}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
         <Menu size={16} className="cursor-pointer" />
@@ -180,6 +205,7 @@ const SubHeader = () => {
                 </DropdownMenuItem>
                 {data?.selectedAccountSmartWallets?.map((s) => (
                   <DropdownMenuItem
+                    key={s.address}
                     id={s.address}
                     onClick={onSmartWalletItemClick}
                   >

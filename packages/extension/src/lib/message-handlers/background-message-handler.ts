@@ -23,6 +23,8 @@ import { makeRpcRequest } from '../requests/toRpcNode';
 import { walletRequestAccounts } from '../providers/background/methods/external/wallet_requestAccounts';
 import { passwordHash } from '../providers/background/methods/internal/passwordHash';
 import { getCurrentNetwork } from '../providers/background/methods/internal/getCurrentNetwork';
+import { switchNetwork } from '../providers/background/methods/internal/switchNetwork';
+import { getAllNetworks } from '../providers/background/methods/internal/getAllNetworks';
 
 export enum InternalBgMethods {
   IS_LOCKED = 'isLocked',
@@ -36,6 +38,8 @@ export enum InternalBgMethods {
   CONNECT_ACCOUNT = 'connectAccount',
   IMPORT_CONTRACT = 'importContract',
   GET_CURRENT_NETWORK = 'getCurrentNetwork',
+  SWITCH_NETWORK = 'switchNetwork',
+  GET_ALL_NETWORKS = 'getAllNetworks',
 }
 
 export const handleBackgroundMessage: BackgroundOnMessageCallback = async (
@@ -112,6 +116,10 @@ const handleInternal: BackgroundOnMessageCallback<
     return passwordHash(request, domain);
   } else if (request.msg.method === InternalBgMethods.GET_CURRENT_NETWORK) {
     return getCurrentNetwork(request, domain);
+  } else if (request.msg.method === InternalBgMethods.SWITCH_NETWORK) {
+    return switchNetwork(request, domain);
+  } else if (request.msg.method === InternalBgMethods.GET_ALL_NETWORKS) {
+    return getAllNetworks(request, domain);
   } else {
     console.log('bg: internal unknown method');
     throw getCustomError('Invalid background method');
