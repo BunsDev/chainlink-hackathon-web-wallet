@@ -4,7 +4,7 @@ import { EthereumRequest } from '../../../lib/providers/types';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { InternalBgMethods } from '../../../lib/message-handlers/background-message-handler';
 import { RuntimePostMessagePayloadType } from '../../../lib/message-bridge/types';
-import { DeployedContractResult } from '../../../lib/providers/background/methods/internal/deployUndasContract';
+import { DeployedContractResult } from '../../../lib/providers/background/methods/internal/deploySmartWalletContract';
 
 export const useDeployContract = () => {
   return useMutation({
@@ -33,7 +33,7 @@ export const useDeployContract = () => {
         DeployedContractResult
       >(
         {
-          method: InternalBgMethods.DEPLOY_UNDAS_CONTRACT,
+          method: InternalBgMethods.DEPLOY_SMART_WALLET_CONTRACT,
           params: [deployTx.result],
         },
         RuntimePostMessagePayloadType.INTERNAL

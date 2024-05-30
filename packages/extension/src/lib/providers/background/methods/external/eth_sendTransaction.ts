@@ -24,17 +24,22 @@ import { getBaseUrl } from '../../../../utils/url';
 import { EthereumRequest } from '../../../types';
 import { UserAccount, UserSelectedAccount } from '../internal/initializeWallet';
 import { getCurrentNetwork } from '../../../../requests/toRpcNode';
-import { Wallet__factory } from '../../../../../typechain';
+import { SmartWalletV1__factory } from '../../../../../typechain';
 import { decryptValue } from '../../../../utils/crypto';
 import { getSessionPassword } from '../../../../storage/common';
+import { getAddress } from 'ethers/lib/utils';
 
 const bnToHex = (value?: BigNumberish) => {
   return value ? BigNumber.from(value).toHexString() : undefined;
 };
 
+export type SendTransactionRequestDTO = TransactionRequest & {
+  useMasterAccountValue?: boolean;
+};
+
 export const ethSendTransaction: BackgroundOnMessageCallback<
   unknown,
-  EthereumRequest<TransactionRequest>
+  EthereumRequest<SendTransactionRequestDTO>
 > = async (request, origin) => {
   console.log('ethRequestAccounts', request);
   const payload = request.msg;
@@ -59,6 +64,8 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
     throw getCustomError('ethRequestAccounts: invalid sender origin');
   }
 
+  const accounts = await storageAddresses.get<UserAccount[]>('accounts');
+
   const userSelectedAccount = await storageAddresses.get<UserSelectedAccount>(
     'selectedAccount'
   );
@@ -69,20 +76,27 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
 
   const { rpcProvider } = await getCurrentNetwork();
 
-  if (!txRequest.from) {
-    txRequest.from = userSelectedAccount.address;
+  const isSmartAccount = !!userSelectedAccount.masterAccount;
+
+  const masterWalletAccount = isSmartAccount
+    ? accounts?.find(
+        (v) => getAddress(v.address) === userSelectedAccount.address
+      )
+    : null;
+
+  if (masterWalletAccount === undefined) {
+    throw new Error('Master account is not found');
   }
 
-  const isThroughUndasProxy =
-    userSelectedAccount.undasContract &&
-    userSelectedAccount.isUndasContractSelected &&
-    txRequest.to !== userSelectedAccount.undasContract;
+  const senderAddress = isSmartAccount
+    ? userSelectedAccount.masterAccount!
+    : userSelectedAccount.address;
 
-  if (isThroughUndasProxy) {
-    txRequest.from = userSelectedAccount.address;
+  txRequest.from ??= senderAddress;
 
-    const walletContract = Wallet__factory.connect(
-      userSelectedAccount.undasContract,
+  if (isSmartAccount) {
+    const walletContract = SmartWalletV1__factory.connect(
+      userSelectedAccount.address,
       rpcProvider
     );
 
@@ -91,12 +105,11 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
     console.log('tx.to', txRequest.to);
     console.log('tx.datatx.data', txRequest.data);
 
-    const populatedTx =
-      await walletContract.populateTransaction.makeTransaction(
-        txRequest.to,
-        txRequest.data ?? '',
-        txRequest.value ?? '0'
-      );
+    const populatedTx = await walletContract.populateTransaction.execute(
+      txRequest.to,
+      txRequest.value ?? '0',
+      txRequest.data ?? '0x'
+    );
 
     console.log('populatedTx', populatedTx);
 
@@ -105,9 +118,7 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
   }
 
   if (!txRequest.nonce) {
-    txRequest.nonce = await rpcProvider.getTransactionCount(
-      userSelectedAccount.address
-    );
+    txRequest.nonce = await rpcProvider.getTransactionCount(senderAddress);
   }
 
   if (!txRequest.gasPrice) {
@@ -130,18 +141,27 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
 
   let tx = txRequest;
 
-  console.log('TX DATA', tx.data);
-  console.log('TX DATA', userSelectedAccount.isUndasContractSelected);
-  console.log('TX TRIGGER POP UP', request.triggerPopup);
+  console.log('tx.data', tx.data);
+  console.log('isSmartAccount', isSmartAccount);
+  console.log('request.triggerPopup', request.triggerPopup);
 
   if (request.triggerPopup) {
     // TODO: pass flag to trigger/not-trigger popup menu
     // to be able to use this bg handler for internal purposes
     const response =
       // TODO: return only updated gas fees
-      await window.getResponse<TransactionRequest>(
+      await window.getResponse<SendTransactionRequestDTO>(
         getPopupPath(UIRoutes.ethSendTransaction.path),
-        { method: payload.method, params: [tx] },
+        {
+          method: payload.method,
+          params: [
+            {
+              ...tx,
+              isSmartAccount,
+              masterWallet: userSelectedAccount.masterAccount,
+            },
+          ],
+        },
         true
       );
 
@@ -150,7 +170,7 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
     console.log('trueTX', tx);
   }
 
-  if (isThroughUndasProxy) delete tx.value;
+  if (isSmartAccount && !txRequest.useMasterAccountValue) delete tx.value;
 
   delete (tx as any).gas;
 
@@ -160,8 +180,17 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
   console.log('default tx', tx);
 
   const password = await getSessionPassword();
+  
+  if(!password) {
+    throw new Error('Wallet is locked');
+  }
 
-  const decryptedPk = decryptValue(userSelectedAccount.privateKey!, password);
+  const decryptedPk = decryptValue(
+    isSmartAccount
+      ? masterWalletAccount!.privateKey!
+      : userSelectedAccount.privateKey!,
+    password
+  );
 
   const wallet = new Wallet(decryptedPk);
 
