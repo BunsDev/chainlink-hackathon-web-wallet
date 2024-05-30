@@ -23,6 +23,7 @@ import { formatUnits } from 'ethers/lib/utils';
 import { cn } from '../../../lib/utils/cn';
 import { ScrollArea } from '../../../components/scroll-area';
 import { Button } from '../../../components/button';
+import { SendTransactionRequestDTO } from '../../../lib/providers/background/methods/external/eth_sendTransaction';
 
 enum Tab {
   Details = 'Details',
@@ -30,8 +31,8 @@ enum Tab {
 }
 
 type SendTransactionPageProps = {
-  tx?: TransactionRequest;
-} & PromisePageProps<TransactionRequest>;
+  tx?: SendTransactionRequestDTO;
+} & PromisePageProps<SendTransactionRequestDTO>;
 
 const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
   runtimeListen = false,
@@ -41,10 +42,10 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
 }) => {
   const [tab, setTab] = useState(Tab.Details);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
-  const [txToSign, setTxToSign] = useState<TransactionRequest>();
+  const [txToSign, setTxToSign] = useState<SendTransactionRequestDTO>();
 
   const [pagePromise, pagePromiseFunctions] =
-    usePagePromise<TransactionRequest>();
+    usePagePromise<SendTransactionRequestDTO>();
 
   const discardTx = () => {
     pagePromiseFunctions?.reject?.(getError(ErrorCodes.userRejected));
@@ -56,7 +57,7 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
 
   const onTabMessage = useCallback(
     async (
-      req: RuntimePostMessagePayload<EthereumRequest<TransactionRequest>>
+      req: RuntimePostMessagePayload<EthereumRequest<SendTransactionRequestDTO>>
     ) => {
       if (!req.msg || !req.msg.params || !req.msg.params.length) {
         const err = getCustomError('Invalid payload');
@@ -77,8 +78,8 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
   useEffect(() => {
     if (runtimeListen && !tx) {
       newPopupOnMessage<
-        TransactionRequest,
-        EthereumRequest<TransactionRequest>
+        SendTransactionRequestDTO,
+        EthereumRequest<SendTransactionRequestDTO>
       >(onTabMessage);
 
       return () => {
@@ -92,7 +93,7 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
           msg: {
             method: 'eth_sendTransaction',
             params: [tx],
-          } as EthereumRequest<TransactionRequest>,
+          } as EthereumRequest<SendTransactionRequestDTO>,
         })
       )
         .then(onResolveCallback ?? (() => {}))
@@ -109,7 +110,9 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
         <div className="text-[16px] leading-[24px] font-medium">Account 3</div>
         <img src="/assets/icon_arrow_right.svg" alt="icon_arrow_right" />
         <div className="text-[16px] leading-[24px] font-medium">
-          New Contract Wallet
+          {tx?.isContractWalletDeployment
+            ? 'Wallet deployment'
+            : 'Contract interaction'}
         </div>
       </div>
       <div className="mt-[24px] flex justify-between">
@@ -121,7 +124,9 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
             {formatUnits(tx?.value ?? '0')}
           </div>
         </div>
-        <div className="flex flex-col gap-[8px]">
+        <div
+          className={cn("flex flex-col gap-[8px]", !tx?.isContractWalletDeployment && 'hidden')}
+        >
           <div className="text-[14px] leading-[24px] text-muted-foreground">
             Contract deployment:
           </div>

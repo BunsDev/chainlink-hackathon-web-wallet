@@ -13,11 +13,8 @@ export type GetAccountsDTO = {
   isImported: boolean;
   isActive: boolean;
   balanceNative: string;
-  undasContract?: {
-    address: string;
-    isConnected: boolean;
-    isActive: boolean;
-  };
+  isSmartContract: boolean;
+  masterWallet?: string
 };
 
 export const getUserAddresses: BackgroundOnMessageCallback<
@@ -72,19 +69,8 @@ export const getUserAddresses: BackgroundOnMessageCallback<
                 .includes(getAddress(acc.address))
             : false,
           balanceNative: formatUnits(balance, 18),
-          undasContract: acc.undasContract
-            ? {
-                address: acc.undasContract,
-                isActive: isSelected
-                  ? selectedAccount?.isUndasContractSelected ?? false
-                  : false,
-                isConnected: connectedAccounts
-                  ? connectedAccounts
-                      .map(getAddress)
-                      .includes(getAddress(acc.undasContract))
-                  : false,
-              }
-            : undefined,
+          isSmartContract: !!acc.masterAccount,
+          masterWallet: acc.masterAccount,
         } as GetAccountsDTO;
       })
       .map((v) => v())

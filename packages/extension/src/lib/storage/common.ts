@@ -1,7 +1,6 @@
 export const getSessionPassword = async () => {
   const password = (await chrome.storage.local.get(['password']))['password'];
-  console.log('password', password);
-  return password;
+  return password as string | undefined | null;
 };
 
 export const setSessionPassword = async (password: string) => {

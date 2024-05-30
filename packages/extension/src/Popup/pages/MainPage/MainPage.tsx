@@ -11,10 +11,10 @@ import { Marketplace__factory } from '../../testContractFactory/Marketplace__fac
 import { Wallet } from '../../testContractFactory/Wallet';
 import { Wallet__factory } from '../../testContractFactory/Wallet__factory';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
-import { DeployedContractResult } from '../../../lib/providers/background/methods/internal/deployUndasContract';
+import { DeployedContractResult } from '../../../lib/providers/background/methods/internal/deploySmartWalletContract';
 import { SwitchAccountsRequestPayloadDTO } from '../../../lib/providers/background/methods/internal/switchAccount';
 import { getAddress } from 'ethers/lib/utils';
-import { importContract } from '../../../lib/providers/background/methods/internal/importContract';
+import { importContract } from '../../../lib/providers/background/methods/internal/importSmartWallet';
 import { getUndasContractAddress } from '../../../lib/providers/background/methods/internal/getUndasContractAddress';
 
 const MainPage = (props: any) => {
@@ -105,7 +105,7 @@ const MainPage = (props: any) => {
       DeployedContractResult
     >(
       {
-        method: InternalBgMethods.DEPLOY_UNDAS_CONTRACT,
+        method: InternalBgMethods.DEPLOY_SMART_WALLET_CONTRACT,
         params: [deployTx.result],
       },
       RuntimePostMessagePayloadType.INTERNAL
