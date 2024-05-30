@@ -21,17 +21,21 @@ import { switchAccount } from '../providers/background/methods/internal/switchAc
 import { EthereumRequest } from '../providers/types';
 import { makeRpcRequest } from '../requests/toRpcNode';
 import { walletRequestAccounts } from '../providers/background/methods/external/wallet_requestAccounts';
+import { passwordHash } from '../providers/background/methods/internal/passwordHash';
+import { getCurrentNetwork } from '../providers/background/methods/internal/getCurrentNetwork';
 
 export enum InternalBgMethods {
   IS_LOCKED = 'isLocked',
+  GET_HASHED_PASSWORD = 'getHashedPassword',
   IS_WALLET_INITIALIZED = 'isWalletInitialized',
   INITIALIZE_WALLET = 'initializeWallet',
   GET_USER_ADDRESSES = 'getUserAddresses',
-  DEPLOY_SMART_WALLET_CONTRACT = 'deployUndasContract',
+  DEPLOY_SMART_WALLET_CONTRACT = 'deploySmartWalletContract',
   SWITCH_ACCOUNT = 'switchAccount',
   DISCONNECT_ACCOUNT = 'disconnectAccount',
   CONNECT_ACCOUNT = 'connectAccount',
   IMPORT_CONTRACT = 'importContract',
+  GET_CURRENT_NETWORK = 'getCurrentNetwork',
 }
 
 export const handleBackgroundMessage: BackgroundOnMessageCallback = async (
@@ -104,6 +108,10 @@ const handleInternal: BackgroundOnMessageCallback<
     return disconnectAccount(request, domain);
   } else if (request.msg.method === InternalBgMethods.CONNECT_ACCOUNT) {
     return connectAccount(request, domain);
+  } else if (request.msg.method === InternalBgMethods.GET_HASHED_PASSWORD) {
+    return passwordHash(request, domain);
+  } else if (request.msg.method === InternalBgMethods.GET_CURRENT_NETWORK) {
+    return getCurrentNetwork(request, domain);
   } else {
     console.log('bg: internal unknown method');
     throw getCustomError('Invalid background method');

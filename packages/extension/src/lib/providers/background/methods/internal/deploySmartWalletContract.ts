@@ -20,6 +20,7 @@ import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { getCurrentNetwork } from '../../../../requests/toRpcNode';
 import { SmartWalletFactoryV1__factory } from '../../../../../typechain';
 import { hash } from '../../../../utils/crypto';
+import { SendTransactionRequestDTO } from '../external/eth_sendTransaction';
 
 // TODO: move to shared constants
 const factoryAddresses: Record<number, string> = {
@@ -33,13 +34,9 @@ export type DeployedContractResult = {
 
 export const deploySmartWalletContract: BackgroundOnMessageCallback<
   DeployedContractResult,
-  EthereumRequest<TransactionRequest>
+  EthereumRequest
 > = async (req, domain) => {
   console.log('deploySmartWalletContract');
-
-  // TODO: move invalid payload error to predefined errors
-  if (!req.msg || !req.msg.params || !req.msg.params.length)
-    throw getCustomError('Invalid payload');
 
   const storageWallets = new Storage(StorageNamespaces.USER_WALLETS);
 
@@ -96,11 +93,14 @@ export const deploySmartWalletContract: BackgroundOnMessageCallback<
   console.log('Anticipated address', deploymentAddress);
   console.log('Tx request', deployTx);
 
-  const txHash = await sendMessageFromBackgroundToBackground<string>(
+  const txHash = await sendMessageFromBackgroundToBackground<
+    string,
+    EthereumRequest<SendTransactionRequestDTO>
+  >(
     {
       method: 'eth_sendTransaction',
-      params: [deployTx],
-    } as EthereumRequest<TransactionRequest>,
+      params: [{ ...deployTx, isContractWalletDeployment: true }],
+    },
     RuntimePostMessagePayloadType.EXTERNAL,
     domain,
     true

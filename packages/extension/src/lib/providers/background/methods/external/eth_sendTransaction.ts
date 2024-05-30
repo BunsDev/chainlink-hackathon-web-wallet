@@ -35,6 +35,7 @@ const bnToHex = (value?: BigNumberish) => {
 
 export type SendTransactionRequestDTO = TransactionRequest & {
   useMasterAccountValue?: boolean;
+  isContractWalletDeployment?: boolean;
 };
 
 export const ethSendTransaction: BackgroundOnMessageCallback<
