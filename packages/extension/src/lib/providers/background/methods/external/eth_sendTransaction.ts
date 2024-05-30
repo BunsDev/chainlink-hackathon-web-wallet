@@ -81,9 +81,13 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
 
   const masterWalletAccount = isSmartAccount
     ? accounts?.find(
-        (v) => getAddress(v.address) === userSelectedAccount.address
+        (v) =>
+          getAddress(v.address) ===
+          getAddress(userSelectedAccount.masterAccount!)
       )
     : null;
+
+  console.log({ isSmartAccount });
 
   if (masterWalletAccount === undefined) {
     throw new Error('Master account is not found');
@@ -96,6 +100,8 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
   txRequest.from ??= senderAddress;
 
   if (isSmartAccount) {
+    txRequest.from = masterWalletAccount?.address!;
+
     const walletContract = SmartWalletV1__factory.connect(
       userSelectedAccount.address,
       rpcProvider
@@ -181,8 +187,8 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
   console.log('default tx', tx);
 
   const password = await getSessionPassword();
-  
-  if(!password) {
+
+  if (!password) {
     throw new Error('Wallet is locked');
   }
 

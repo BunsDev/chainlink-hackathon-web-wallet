@@ -22,6 +22,7 @@ import {
 } from '../../../../requests/toRpcNode';
 import { getActiveAccountForSite } from '../../helpers';
 import { getAddress } from 'ethers/lib/utils';
+import { SmartWalletV1__factory } from '../../../../../typechain';
 
 export const ethCall: BackgroundOnMessageCallback<
   unknown,
@@ -34,12 +35,14 @@ export const ethCall: BackgroundOnMessageCallback<
   if (!payload || !payload.params || !payload.params.length) {
     throw getCustomError('ethSendTransaction: invalid data');
   }
+  const storageAddresses = new Storage(StorageNamespaces.USER_WALLETS);
 
   const [txRequest] = payload.params;
 
   if (!domain) {
     throw getCustomError('ethRequestAccounts: invalid sender origin');
   }
+  const accounts = await storageAddresses.get<UserAccount[]>('accounts');
 
   const userSelectedAccount = await getActiveAccountForSite(domain);
 
@@ -47,30 +50,51 @@ export const ethCall: BackgroundOnMessageCallback<
     throw getCustomError('Account is not connected');
   }
 
-  const isSmartWallet = !!userSelectedAccount.masterAccount;
+  const { rpcProvider } = await getCurrentNetwork();
 
-  if (isSmartWallet) {
-    console.log('eth_call through undas');
-    txRequest.from = userSelectedAccount.address;
+  const isSmartAccount = !!userSelectedAccount.masterAccount;
 
-    // const walletContract = Wallet__factory.connect(userSelectedAccount.undasContract, rpcProvider);
+  const masterWalletAccount = isSmartAccount
+    ? accounts?.find(
+        (v) => getAddress(v.address) === userSelectedAccount.address
+      )
+    : null;
 
-    // if (!txRequest.to) throw getCustomError("missing argument");
+  if (masterWalletAccount === undefined) {
+    throw new Error('Master account is not found');
+  }
 
-    // console.log('tx.to', txRequest.to)
-    // console.log('tx.datatx.data', txRequest.data)
+  const senderAddress = isSmartAccount
+    ? userSelectedAccount.masterAccount!
+    : userSelectedAccount.address;
 
-    // const populatedTx = await walletContract.populateTransaction.makeTransaction(
-    //     txRequest.to,
-    //     txRequest.data ?? '',
-    //     txRequest.value ?? '0');
+  txRequest.from ??= senderAddress;
 
-    // console.log('populatedTx', populatedTx)
+  if (isSmartAccount) {
+    console.log('eth_call through contract');
+    txRequest.from = userSelectedAccount.masterAccount!;
 
-    // txRequest.data = populatedTx.data
-    // txRequest.to = populatedTx.to
+    const walletContract = SmartWalletV1__factory.connect(
+      userSelectedAccount.address,
+      rpcProvider
+    );
 
-    // delete txRequest.value;
+    if (!txRequest.to) throw getCustomError('missing argument');
+
+    console.log('tx.to', txRequest.to);
+    console.log('tx.datatx.data', txRequest.data);
+
+    const populatedTx = await walletContract.populateTransaction.execute(
+      txRequest.to,
+      txRequest.value ?? '0',
+      txRequest.data ?? '0x'
+    );
+
+    console.log('populatedTx', populatedTx);
+
+    txRequest.data = populatedTx.data ?? '0x';
+    txRequest.to = populatedTx.to;
+    delete txRequest.value;
   }
 
   // if (!txRequest.nonce) {
@@ -92,7 +116,7 @@ export const ethCall: BackgroundOnMessageCallback<
 
   // delete (txRequest as any).gas;
 
-  // payload.params[0] = txRequest;
+  payload.params[0] = txRequest;
 
   console.log('eth call request', request);
 

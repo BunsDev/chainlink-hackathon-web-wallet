@@ -82,6 +82,7 @@ const handleExternal: BackgroundOnMessageCallback<
   } else if (request.msg.method === 'eth_call') {
     return ethCall(request, domain);
   } else {
+    console.log('making direct rpc request');
     return makeRpcRequest(request, domain);
   }
 };
