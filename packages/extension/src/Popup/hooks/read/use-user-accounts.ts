@@ -39,8 +39,12 @@ export const useUserAccounts = () => {
       const selectedAccount = userAccounts.result?.find?.((v) => v.isActive);
 
       // FIXME!!
-      const selectedAccountSmartWallets = userAccounts.result?.find?.(
-        (v) => v?.masterWallet === selectedAccount?.address
+      const selectedAccountSmartWallets = userAccounts.result?.filter?.(
+        (v) =>
+          v?.masterWallet ===
+          (selectedAccount?.isSmartContract
+            ? selectedAccount.masterWallet
+            : selectedAccount?.address)
       );
 
       return {

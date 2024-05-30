@@ -1,5 +1,5 @@
 import { ChevronDown, Menu } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollArea } from '../../../components/scroll-area';
 import { Button } from '../../../components/button';
 import {
@@ -18,11 +18,13 @@ import { useNavigate } from 'react-router-dom';
 import { UIRoutes } from '../../../lib/popup-routes';
 import { useUserAccounts } from '../../hooks/read/use-user-accounts';
 import { useCurrentNetwork } from '../../hooks/read/use-current-network';
+import { useSwitchWallet } from '../../hooks/mutations/use-switch-wallet';
+import { getAddress } from 'ethers/lib/utils';
 
 const Header = () => {
   const [networkOpened, setNetworkOpened] = useState(false);
   const { data: currentNetwork } = useCurrentNetwork();
-  const { data,} = useUserAccounts();
+  const { data } = useUserAccounts();
 
   return (
     <div className="py-[18px] bg-white px-[24px] items-center justify-between shadow-sm flex">
@@ -72,8 +74,29 @@ const Header = () => {
 
 const SubHeader = () => {
   const { data } = useUserAccounts();
-  const isSmartWalletActive = data?.selectedAccount?.isSmartContract;
   const [popoverOpened, setPopoverOpened] = useState(false);
+  const [smartWalletSelectOpened, setSmartWalletSelectOpened] = useState(false);
+  const { mutateAsync: switchWallet } = useSwitchWallet();
+  const onSmartWalletItemClick = useCallback(
+    async (i: any) => {
+      let id = i?.target?.id;
+
+      if (id === 'no-smart-wallet') {
+        id = data?.selectedAccount?.masterWallet!;
+      }
+
+      if (
+        !id ||
+        getAddress(id) === getAddress(data?.selectedAccount?.address!)
+      ) {
+        return;
+      }
+
+      await switchWallet({ switchTo: id });
+    },
+    [data]
+  );
+
   const navigate = useNavigate();
 
   return (
@@ -83,49 +106,90 @@ const SubHeader = () => {
           Master account:
         </div>
         <div className="text-[12px] leading-[20px] text-muted-foreground">
-          {isSmartWalletActive
+          {data?.selectedAccount?.isSmartContract
             ? data?.selectedAccount?.masterWallet!
             : data?.selectedAccount?.address!}
         </div>
       </div>
       <div className="flex gap-[8px]">
-        <Popover open={popoverOpened} onOpenChange={setPopoverOpened}>
-          <PopoverTrigger asChild>
-            <div className="flex items-center gap-[4px] cursor-pointer">
-              <div className="bg-error rounded-full w-[8px] h-[8px]" />
-              <div className="text-[12px] leading-[20px] text-error">
-                Not deployed
+        {data?.selectedAccountSmartWallets?.length === 0 ? (
+          <Popover open={popoverOpened} onOpenChange={setPopoverOpened}>
+            <PopoverTrigger asChild>
+              <div className="flex items-center gap-[4px] cursor-pointer">
+                <div className="bg-error rounded-full w-[8px] h-[8px]" />
+                <div className="text-[12px] leading-[20px] text-error">
+                  Not deployed
+                </div>
               </div>
-            </div>
-          </PopoverTrigger>
-          <PopoverContent className="rounded-[4px] py-[8px] px-[16px] flex flex-col gap-[16px] border-none max-w-[290px] w-full ml-[40px]">
-            <div className="flex gap-[8px]">
-              <img src="/assets/icon_warning.svg" alt="warning" />
-              <div className="text-[12px] leading-[20px] text-muted-foreground">
-                Your acount is not activated yet. Please generate Smart Contract
-                to activate it.
+            </PopoverTrigger>
+            <PopoverContent className="rounded-[4px] py-[8px] px-[16px] flex flex-col gap-[16px] border-none max-w-[290px] w-full ml-[40px]">
+              <div className="flex gap-[8px]">
+                <img src="/assets/icon_warning.svg" alt="warning" />
+                <div className="text-[12px] leading-[20px] text-muted-foreground">
+                  Your acount is not activated yet. Please generate Smart
+                  Contract to activate it.
+                </div>
               </div>
-            </div>
-            <div className="flex gap-[8px]">
-              <Button
-                variant="outline"
-                className="py-[4px] px-[17px] text-[16px] leading-[24px] rounded-[8px] flex-1"
-                onClick={() => setPopoverOpened(false)}
-              >
-                Ask me later
-              </Button>
-              <Button
-                className="py-[4px] px-[17px] text-[16px] leading-[24px] rounded-[8px] flex-1"
-                onClick={() => navigate(`/${UIRoutes.generateContract.path}`)}
-              >
-                Activate
-              </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
-        <div className="text-[12px] leading-[20px] text-muted-foreground">
-          {isSmartWalletActive ? data?.selectedAccount?.address! : '-'}
-        </div>
+              <div className="flex gap-[8px]">
+                <Button
+                  variant="outline"
+                  className="py-[4px] px-[17px] text-[16px] leading-[24px] rounded-[8px] flex-1"
+                  onClick={() => setPopoverOpened(false)}
+                >
+                  Ask me later
+                </Button>
+                <Button
+                  className="py-[4px] px-[17px] text-[16px] leading-[24px] rounded-[8px] flex-1"
+                  onClick={() => navigate(`/${UIRoutes.generateContract.path}`)}
+                >
+                  Activate
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        ) : (
+          <div className="text-[12px] leading-[20px] text-muted-foreground">
+            <DropdownMenu
+              open={smartWalletSelectOpened}
+              onOpenChange={setSmartWalletSelectOpened}
+            >
+              <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-[8px] cursor-pointer">
+                  <div>
+                    {data?.selectedAccount?.isSmartContract
+                      ? data?.selectedAccount.address
+                      : '-'}
+                  </div>
+                  <div>
+                    <ChevronDown
+                      size={16}
+                      className={cn(
+                        'transition-all',
+                        smartWalletSelectOpened && 'rotate-180'
+                      )}
+                    />
+                  </div>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  id={'no-smart-wallet'}
+                  onClick={onSmartWalletItemClick}
+                >
+                  -
+                </DropdownMenuItem>
+                {data?.selectedAccountSmartWallets?.map((s) => (
+                  <DropdownMenuItem
+                    id={s.address}
+                    onClick={onSmartWalletItemClick}
+                  >
+                    {s.address}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </div>
     </div>
   );
