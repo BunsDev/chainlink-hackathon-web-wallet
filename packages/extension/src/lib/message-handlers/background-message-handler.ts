@@ -20,6 +20,7 @@ import { isWalletInitialized } from '../providers/background/methods/internal/is
 import { switchAccount } from '../providers/background/methods/internal/switchAccount';
 import { EthereumRequest } from '../providers/types';
 import { makeRpcRequest } from '../requests/toRpcNode';
+import { walletRequestAccounts } from '../providers/background/methods/external/wallet_requestAccounts';
 
 export enum InternalBgMethods {
   IS_LOCKED = 'isLocked',
@@ -64,6 +65,8 @@ const handleExternal: BackgroundOnMessageCallback<
     request.msg.method == 'eth_coinbase'
   ) {
     return ethRequestAccounts(request, domain);
+  } else if (request.msg.method === 'wallet_requestAccounts') {
+    return walletRequestAccounts(request, domain);
   } else if (request.msg.method === 'eth_sendTransaction') {
     return ethSendTransaction(request, domain);
   } else if (request.msg.method === 'eth_sendRawTransaction') {
