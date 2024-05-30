@@ -9,7 +9,8 @@
   },
   "private": true,
   "workspaces": [
-    "packages/extension"
+    "packages/extension",
+    "packages/rent-app"
   ],
   "engines": {
     "node": ">=16.0.0"
