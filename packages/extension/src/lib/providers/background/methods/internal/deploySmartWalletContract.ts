@@ -24,7 +24,7 @@ import { SendTransactionRequestDTO } from '../external/eth_sendTransaction';
 
 // TODO: move to shared constants
 const factoryAddresses: Record<number, string> = {
-  11155111: '0x8dDF361802597169f10e6dc12C028aD2d23495f1',
+  11155111: '0xAb6Cb2842DEfDEfA0978cD1e65D59DBfbd8518F2',
 };
 
 export type DeployedContractResult = {
@@ -114,7 +114,7 @@ export const deploySmartWalletContract: BackgroundOnMessageCallback<
   console.log('DEPLOY CONTRACT RESULT:', result);
 
   accounts.push({
-    address: factoryAddress,
+    address: deploymentAddress,
     isImported: false,
     masterAccount: selectedAccount.address,
   });
