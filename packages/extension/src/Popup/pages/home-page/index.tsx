@@ -19,10 +19,12 @@ import { UIRoutes } from '../../../lib/popup-routes';
 import { useUserAccounts } from '../../hooks/read/use-user-accounts';
 import { useCurrentNetwork } from '../../hooks/read/use-current-network';
 import { useSwitchWallet } from '../../hooks/mutations/use-switch-wallet';
-import { getAddress } from 'ethers/lib/utils';
+import { getAddress, isAddress } from 'ethers/lib/utils';
 import { useAllNetworks } from '../../hooks/read/use-all-networks';
 import { useSwitchNetwork } from '../../hooks/mutations/use-switch-network';
 import { shortenAddress } from '../../../lib/utils/address';
+import { useImportSmartWallet } from '../../hooks/mutations/use-import-smart-wallet';
+import { useDisconnectWallet } from '../../hooks/mutations/use-disconnect-wallet';
 
 const Header = () => {
   const [networkOpened, setNetworkOpened] = useState(false);
@@ -30,6 +32,7 @@ const Header = () => {
   const { data } = useUserAccounts();
   const { data: networksData } = useAllNetworks();
   const { mutateAsync: switchNetwork } = useSwitchNetwork();
+  const { mutateAsync: disconnectWallet } = useDisconnectWallet();
 
   const onNetworkItemClick = useCallback(
     async (i: any) => {
@@ -44,19 +47,25 @@ const Header = () => {
     [data]
   );
 
+  const onConnectClicked = useCallback(async () => {
+    if (data?.selectedAccount?.isConnected) {
+      await disconnectWallet(data?.selectedAccount?.address);
+    }
+  }, [data]);
+
   return (
     <div className="py-[18px] bg-white px-[24px] items-center justify-between shadow-sm flex">
-      <div className="flex items-center gap-[16px]">
+      <div className="flex items-center gap-[16px]" onClick={onConnectClicked}>
         <img src="/assets/main_logo_small.svg" alt="logo" />
         {data?.selectedAccount?.isConnected ? (
-          <div className="flex items-center gap-[4px]">
+          <div className="flex items-center gap-[4px] cursor-pointer">
             <div className="bg-success rounded-full w-[8px] h-[8px]" />
             <div className="text-[12px] leading-[20px] text-success">
               Connected
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-[4px] cursor-pointer">
+          <div className="flex items-center gap-[4px]">
             <div className="bg-error rounded-full w-[8px] h-[8px]" />
             <div className="text-[12px] leading-[20px] text-error">
               Not Connected
@@ -103,22 +112,35 @@ const SubHeader = () => {
   const [popoverOpened, setPopoverOpened] = useState(false);
   const [smartWalletSelectOpened, setSmartWalletSelectOpened] = useState(false);
   const { mutateAsync: switchWallet } = useSwitchWallet();
+  const { mutateAsync: importSmartWallet } = useImportSmartWallet();
   const onSmartWalletItemClick = useCallback(
     async (i: any) => {
       let id = i?.target?.id;
 
-      if (id === 'no-smart-wallet') {
-        id = data?.selectedAccount?.masterWallet!;
-      }
+      if (id === 'import-wallet') {
+        const newWallet = prompt('Your smart wallet address');
 
-      if (
-        !id ||
-        getAddress(id) === getAddress(data?.selectedAccount?.address!)
-      ) {
-        return;
-      }
+        if (!newWallet || !isAddress(newWallet)) return;
 
-      await switchWallet({ switchTo: id });
+        await importSmartWallet({
+          address: newWallet,
+          masterWallet: data?.selectedAccount?.masterWallet
+            ? data?.selectedAccount?.masterWallet
+            : data?.selectedAccount?.address!,
+        });
+      } else {
+        if (id === 'no-smart-wallet') {
+          id = data?.selectedAccount?.masterWallet!;
+        }
+
+        if (
+          !id ||
+          getAddress(id) === getAddress(data?.selectedAccount?.address!)
+        ) {
+          return;
+        }
+        await switchWallet({ switchTo: id });
+      }
     },
     [data]
   );
@@ -215,6 +237,12 @@ const SubHeader = () => {
                     {shortenAddress(s.address)}
                   </DropdownMenuItem>
                 ))}
+                <DropdownMenuItem
+                  id={'import-wallet'}
+                  onClick={onSmartWalletItemClick}
+                >
+                  + Import new +
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

@@ -32,6 +32,7 @@ import { ethSignTypedDataV4 } from '../providers/background/methods/external/eth
 import { ethEstimateGas } from '../providers/background/methods/external/eth_estimateGas';
 import { convertTxToAutoExecute } from '../providers/background/methods/internal/convertTxToAutoExecute';
 import { getDeploySmartWalletContractTx } from '../providers/background/methods/internal/getDeploySmartWalletContractTx';
+import { importSmartWallet } from '../providers/background/methods/internal/importSmartWallet';
 
 export enum InternalBgMethods {
   IS_LOCKED = 'isLocked',
@@ -43,7 +44,7 @@ export enum InternalBgMethods {
   SWITCH_ACCOUNT = 'switchAccount',
   DISCONNECT_ACCOUNT = 'disconnectAccount',
   CONNECT_ACCOUNT = 'connectAccount',
-  IMPORT_CONTRACT = 'importContract',
+  IMPORT_SMART_WALLET = 'importSmartWallet',
   GET_CURRENT_NETWORK = 'getCurrentNetwork',
   SWITCH_NETWORK = 'switchNetwork',
   GET_ALL_NETWORKS = 'getAllNetworks',
@@ -134,6 +135,8 @@ const handleInternal: BackgroundOnMessageCallback<
     return switchNetwork(request, domain);
   } else if (request.msg.method === InternalBgMethods.GET_ALL_NETWORKS) {
     return getAllNetworks(request, domain);
+  } else if (request.msg.method === InternalBgMethods.IMPORT_SMART_WALLET) {
+    return importSmartWallet(request, domain);
   } else if (
     request.msg.method === InternalBgMethods.CONVERT_TX_TO_AUTO_EXECUTE
   ) {
