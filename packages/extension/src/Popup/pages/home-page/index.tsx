@@ -19,7 +19,7 @@ import { UIRoutes } from '../../../lib/popup-routes';
 import { useUserAccounts } from '../../hooks/read/use-user-accounts';
 import { useCurrentNetwork } from '../../hooks/read/use-current-network';
 import { useSwitchWallet } from '../../hooks/mutations/use-switch-wallet';
-import { getAddress } from 'ethers/lib/utils';
+import { getAddress, isAddress } from 'ethers/lib/utils';
 import { useAllNetworks } from '../../hooks/read/use-all-networks';
 import { useSwitchNetwork } from '../../hooks/mutations/use-switch-network';
 import { shortenAddress } from '../../../lib/utils/address';
@@ -112,22 +112,35 @@ const SubHeader = () => {
   const [popoverOpened, setPopoverOpened] = useState(false);
   const [smartWalletSelectOpened, setSmartWalletSelectOpened] = useState(false);
   const { mutateAsync: switchWallet } = useSwitchWallet();
+  const { mutateAsync: importSmartWallet } = useImportSmartWallet();
   const onSmartWalletItemClick = useCallback(
     async (i: any) => {
       let id = i?.target?.id;
 
-      if (id === 'no-smart-wallet') {
-        id = data?.selectedAccount?.masterWallet!;
-      }
+      if (id === 'import-wallet') {
+        const newWallet = prompt('Your smart wallet address');
 
-      if (
-        !id ||
-        getAddress(id) === getAddress(data?.selectedAccount?.address!)
-      ) {
-        return;
-      }
+        if (!newWallet || !isAddress(newWallet)) return;
 
-      await switchWallet({ switchTo: id });
+        await importSmartWallet({
+          address: newWallet,
+          masterWallet: data?.selectedAccount?.masterWallet
+            ? data?.selectedAccount?.masterWallet
+            : data?.selectedAccount?.address!,
+        });
+      } else {
+        if (id === 'no-smart-wallet') {
+          id = data?.selectedAccount?.masterWallet!;
+        }
+
+        if (
+          !id ||
+          getAddress(id) === getAddress(data?.selectedAccount?.address!)
+        ) {
+          return;
+        }
+        await switchWallet({ switchTo: id });
+      }
     },
     [data]
   );
@@ -224,6 +237,12 @@ const SubHeader = () => {
                     {shortenAddress(s.address)}
                   </DropdownMenuItem>
                 ))}
+                <DropdownMenuItem
+                  id={'import-wallet'}
+                  onClick={onSmartWalletItemClick}
+                >
+                  + Import new +
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

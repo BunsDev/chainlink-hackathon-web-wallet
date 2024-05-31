@@ -40,6 +40,7 @@ export class Provider extends EventEmitter implements ProviderInterface {
       await this.sendMessageHandler(
         JSON.stringify({
           method: "eth_chainId",
+          params: []
         })
       ).then((res) => {
         this.chainId = res;

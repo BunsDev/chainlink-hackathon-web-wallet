@@ -16,7 +16,7 @@ export const importSmartWallet: BackgroundOnMessageCallback<
   const storageWallets = new Storage(StorageNamespaces.USER_WALLETS);
 
   const [{ address, masterWallet }] = payload.msg?.params!;
-  
+
   const accounts = await storageWallets.get<UserAccount[]>('accounts');
   if (!accounts) throw new Error('No accounts');
 
@@ -30,7 +30,7 @@ export const importSmartWallet: BackgroundOnMessageCallback<
     (v) => getAddress(v.address) === getAddress(masterWallet)
   );
 
-  if (masterWalletExist) throw new Error('Master wallet do not exist');
+  if (!masterWalletExist) throw new Error('Master wallet do not exist');
 
   accounts.push({
     address: getAddress(address),
