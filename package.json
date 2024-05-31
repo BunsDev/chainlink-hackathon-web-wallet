@@ -9,7 +9,8 @@
   },
   "private": true,
   "workspaces": [
-    "packages/extension"
+    "packages/extension",
+    "packages/rent-app"
   ],
   "engines": {
     "node": ">=16.0.0"
@@ -19,6 +20,7 @@
     "test": "yarn workspaces foreach -pv run test",
     "lint": "yarn workspaces foreach run lint",
     "build:all": "ultra -r build && yarn run codegen",
+    "build:app": "cd packages/rent-app && yarn build",
     "watch": "concurrently 'npm:watch-*'",
     "build:extension": "cd packages/extension && npm run build",
     "start:extension": "cd packages/extension && npm run start",
