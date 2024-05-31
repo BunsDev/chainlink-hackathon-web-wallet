@@ -1,10 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Button } from '../../../components/button';
 import { useNavigate } from 'react-router-dom';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import QRCode from 'react-qr-code';
 import { useDeployContract } from '../../hooks/mutations/use-deploy-contract';
 import { Loader2 } from 'lucide-react';
+import { useGetDeployContract } from '../../hooks/read/use-get-deploy-contract-tx';
+import { GetDeploySmartWalletContractTxDto } from '../../../lib/providers/background/methods/internal/getDeploySmartWalletContractTx';
+import { useUserAccounts } from '../../hooks/read/use-user-accounts';
+import { useCurrentNetwork } from '../../hooks/read/use-current-network';
 
 enum Step {
   Review = 'Review',
@@ -12,6 +16,8 @@ enum Step {
 }
 
 const Review = () => {
+  const { data } = useUserAccounts();
+  const { data: currentNetwork } = useCurrentNetwork();
   return (
     <>
       <div className="self-center flex gap-[10px] mt-[24px] items-center">
@@ -53,7 +59,7 @@ const Review = () => {
             Address
           </div>
           <div className="text-[16px] leading-[24px] font-medium">
-            0xD397Ff89C0eEF34A8bfD55b7DEb21bF555C4Bb3C
+            {data?.selectedAccount?.address}
           </div>
         </div>
         <div className="border border-[#D0CFFD] w-full border-dashed" />
@@ -61,14 +67,28 @@ const Review = () => {
           <div className="text-[14px] leading-[24px] text-muted-foreground">
             Network
           </div>
-          <div className="text-[14px] leading-[24px] font-medium">Goerli</div>
+          <div className="text-[14px] leading-[24px] font-medium">
+            {currentNetwork?.name}
+          </div>
         </div>
       </div>
     </>
   );
 };
 
-const Activate = () => {
+const Activate = ({
+  setTx,
+}: {
+  setTx: (tx: GetDeploySmartWalletContractTxDto) => void;
+}) => {
+  const { data } = useGetDeployContract();
+  const { data: userAccounts } = useUserAccounts();
+  const { data: currentNetwork } = useCurrentNetwork();
+
+  useEffect(() => {
+    if (data?.deployTx) setTx(data?.deployTx);
+  }, [data]);
+
   return (
     <>
       <div className="self-center flex gap-[10px] mt-[24px] items-center">
@@ -93,14 +113,16 @@ const Activate = () => {
             Amount
           </div>
           <div className="text-[16px] leading-[24px] font-medium">
-            0,0343454 ETH
+            {data?.deployTx?.totalCost} {currentNetwork?.nativeSymbol}
           </div>
         </div>
         <div className="flex flex-col gap-[4px]">
           <div className="text-[14px] leading-[24px] text-muted-foreground">
             Network
           </div>
-          <div className="text-[16px] leading-[24px] font-medium">Goerli</div>
+          <div className="text-[16px] leading-[24px] font-medium">
+            {currentNetwork?.name}
+          </div>
         </div>
       </div>
       <div className="mt-[16px] flex flex-col gap-[4px]">
@@ -108,15 +130,17 @@ const Activate = () => {
           Address
         </div>
         <div className="text-[16px] leading-[24px] font-medium">
-          0xD397Ff89C0eEF34A8bfD55b7DEb21bF555C4Bb3C
+          {userAccounts?.selectedAccount?.address}
         </div>
       </div>
       <div className="flex-1 flex justify-center items-center">
         <div>
-          <QRCode
-            value="0xD397Ff89C0eEF34A8bfD55b7DEb21bF555C4Bb3C"
-            style={{ width: '98px', height: '98px' }}
-          />
+          {userAccounts?.selectedAccount?.address && (
+            <QRCode
+              value={userAccounts?.selectedAccount?.address}
+              style={{ width: '98px', height: '98px' }}
+            />
+          )}
         </div>
       </div>
     </>
@@ -127,11 +151,12 @@ export const GenerateContractPage = () => {
   const [step, setStep] = useState(Step.Review);
   const navigate = useNavigate();
   const { mutateAsync: deployContract, isPending } = useDeployContract();
+  const [tx, setTx] = useState<GetDeploySmartWalletContractTxDto | null>(null);
 
   const map = useMemo(
     () => ({
       [Step.Review]: <Review />,
-      [Step.Activate]: <Activate />,
+      [Step.Activate]: <Activate setTx={setTx} />,
     }),
     []
   );
@@ -152,8 +177,10 @@ export const GenerateContractPage = () => {
     }
 
     if (step === Step.Activate) {
-      await deployContract();
-      navigate('/');
+      if (tx) {
+        await deployContract(tx);
+        navigate('/');
+      }
     }
   };
 

@@ -74,27 +74,29 @@ export const ethEstimateGas: BackgroundOnMessageCallback<
     console.log('eth_estimateGas through contract');
     txRequest.from = userSelectedAccount.masterAccount!;
 
-    const walletContract = SmartWalletV1__factory.connect(
-      userSelectedAccount.address,
-      rpcProvider
-    );
-
     if (!txRequest.to) throw getCustomError('missing argument');
 
-    console.log('tx.to', txRequest.to);
-    console.log('tx.datatx.data', txRequest.data);
+    if (getAddress(txRequest.to) !== getAddress(userSelectedAccount.address)) {
+      const walletContract = SmartWalletV1__factory.connect(
+        userSelectedAccount.address,
+        rpcProvider
+      );
 
-    const populatedTx = await walletContract.populateTransaction.execute(
-      txRequest.to,
-      txRequest.value ?? '0',
-      txRequest.data ?? '0x'
-    );
+      console.log('tx.to', txRequest.to);
+      console.log('tx.datatx.data', txRequest.data);
 
-    console.log('populatedTx', populatedTx);
+      const populatedTx = await walletContract.populateTransaction.execute(
+        txRequest.to,
+        txRequest.value ?? '0',
+        txRequest.data ?? '0x'
+      );
 
-    txRequest.data = populatedTx.data ?? '0x';
-    txRequest.to = populatedTx.to;
-    delete txRequest.value;
+      console.log('populatedTx', populatedTx);
+
+      txRequest.data = populatedTx.data ?? '0x';
+      txRequest.to = populatedTx.to;
+      delete txRequest.value;
+    }
   }
 
   // if (!txRequest.nonce) {

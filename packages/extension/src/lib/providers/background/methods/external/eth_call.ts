@@ -74,47 +74,31 @@ export const ethCall: BackgroundOnMessageCallback<
     console.log('eth_call through contract');
     txRequest.from = userSelectedAccount.masterAccount!;
 
-    const walletContract = SmartWalletV1__factory.connect(
-      userSelectedAccount.address,
-      rpcProvider
-    );
-
     if (!txRequest.to) throw getCustomError('missing argument');
 
-    console.log('tx.to', txRequest.to);
-    console.log('tx.datatx.data', txRequest.data);
+    // if to !== smart contract, then proxify the calll
+    if (getAddress(txRequest.to) !== getAddress(userSelectedAccount.address)) {
+      const walletContract = SmartWalletV1__factory.connect(
+        userSelectedAccount.address,
+        rpcProvider
+      );
 
-    const populatedTx = await walletContract.populateTransaction.execute(
-      txRequest.to,
-      txRequest.value ?? '0',
-      txRequest.data ?? '0x'
-    );
+      console.log('tx.to', txRequest.to);
+      console.log('tx.datatx.data', txRequest.data);
 
-    console.log('populatedTx', populatedTx);
+      const populatedTx = await walletContract.populateTransaction.execute(
+        txRequest.to,
+        txRequest.value ?? '0',
+        txRequest.data ?? '0x'
+      );
 
-    txRequest.data = populatedTx.data ?? '0x';
-    txRequest.to = populatedTx.to;
-    delete txRequest.value;
+      console.log('populatedTx', populatedTx);
+
+      txRequest.data = populatedTx.data ?? '0x';
+      txRequest.to = populatedTx.to;
+      delete txRequest.value;
+    }
   }
-
-  // if (!txRequest.nonce) {
-  //     txRequest.nonce = await rpcProvider.getTransactionCount(userSelectedAccount.address)
-  // }
-
-  // // if (!txRequest.gasPrice) {
-  // //     const estimatedGasPrice = await rpcProvider.getFeeData();
-
-  // //     txRequest.gasPrice = estimatedGasPrice.gasPrice?.toHexString() ?? undefined;
-  // // }
-
-  // if (!txRequest.gasLimit) {
-  //     const estimatedGas = await rpcProvider.estimateGas(txRequest).catch(err => {console.error(err); return BigNumber.from(1_000_000)});
-  //     txRequest.gasLimit =
-  //         // (txRequest as any).gas?.toString() ??
-  //         estimatedGas.toHexString();
-  // }
-
-  // delete (txRequest as any).gas;
 
   payload.params[0] = txRequest;
 

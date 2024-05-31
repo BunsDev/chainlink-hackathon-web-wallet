@@ -21,6 +21,7 @@ import { getCurrentNetwork } from '../../../../requests/toRpcNode';
 import { SmartWalletFactoryV1__factory } from '../../../../../typechain';
 import { hash } from '../../../../utils/crypto';
 import { SendTransactionRequestDTO } from '../external/eth_sendTransaction';
+import { GetDeploySmartWalletContractTxDto } from './getDeploySmartWalletContractTx';
 
 // TODO: move to shared constants
 const factoryAddresses: Record<number, string> = {
@@ -34,64 +35,17 @@ export type DeployedContractResult = {
 
 export const deploySmartWalletContract: BackgroundOnMessageCallback<
   DeployedContractResult,
-  EthereumRequest
+  EthereumRequest<GetDeploySmartWalletContractTxDto>
 > = async (req, domain) => {
   console.log('deploySmartWalletContract');
 
+  const [tx] = req.msg?.params!;
+
   const storageWallets = new Storage(StorageNamespaces.USER_WALLETS);
-
-  const selectedAccount = await storageWallets.get<UserSelectedAccount>(
-    'selectedAccount'
-  );
-
-  if (!selectedAccount) throw getCustomError('Selected addresses is null');
 
   const accounts = await storageWallets.get<UserAccount[]>('accounts');
 
   if (!accounts || !accounts.length) throw getCustomError('Accounts is null');
-
-  const { rpcProvider, chainId } = await getCurrentNetwork();
-
-  const factoryAddress = factoryAddresses[chainId];
-
-  if (!factoryAddress) {
-    throw new Error('Network is not supported');
-  }
-
-  const factory = SmartWalletFactoryV1__factory.connect(
-    factoryAddress,
-    rpcProvider
-  );
-
-  const randomSeed = hash(new Date().getTime().toString());
-
-  const salt = ethers.utils.solidityKeccak256(
-    ['address', 'string'],
-    [selectedAccount.address, randomSeed]
-  );
-
-  const deployTx = await factory.populateTransaction.create2Wallet(
-    selectedAccount.address,
-    selectedAccount.address,
-    salt
-  );
-
-  const deploymentAddress = await factory.predictCreate2Wallet(
-    selectedAccount.address,
-    salt
-  );
-
-  const nonce =
-    deployTx.nonce ??
-    (await rpcProvider.getTransactionCount(
-      selectedAccount.address ?? '',
-      'pending'
-    ));
-
-  console.log({ nonce });
-
-  console.log('Anticipated address', deploymentAddress);
-  console.log('Tx request', deployTx);
 
   const txHash = await sendMessageFromBackgroundToBackground<
     string,
@@ -99,7 +53,7 @@ export const deploySmartWalletContract: BackgroundOnMessageCallback<
   >(
     {
       method: 'eth_sendTransaction',
-      params: [{ ...deployTx, isContractWalletDeployment: true }],
+      params: [{ ...tx, isContractWalletDeployment: true }],
     },
     RuntimePostMessagePayloadType.EXTERNAL,
     domain,
@@ -107,16 +61,16 @@ export const deploySmartWalletContract: BackgroundOnMessageCallback<
   );
 
   const result: DeployedContractResult = {
-    address: deploymentAddress,
+    address: tx.address,
     txHash,
   };
 
   console.log('DEPLOY CONTRACT RESULT:', result);
 
   accounts.push({
-    address: deploymentAddress,
+    address: tx.address,
     isImported: false,
-    masterAccount: selectedAccount.address,
+    masterAccount: tx.from,
   });
 
   await storageWallets.set('accounts', accounts);

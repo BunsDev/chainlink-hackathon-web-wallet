@@ -30,6 +30,8 @@ import { switchNetwork } from '../providers/background/methods/internal/switchNe
 import { getAllNetworks } from '../providers/background/methods/internal/getAllNetworks';
 import { ethSignTypedDataV4 } from '../providers/background/methods/external/eth_signTypedData_v4';
 import { ethEstimateGas } from '../providers/background/methods/external/eth_estimateGas';
+import { convertTxToAutoExecute } from '../providers/background/methods/internal/convertTxToAutoExecute';
+import { getDeploySmartWalletContractTx } from '../providers/background/methods/internal/getDeploySmartWalletContractTx';
 
 export enum InternalBgMethods {
   IS_LOCKED = 'isLocked',
@@ -45,6 +47,8 @@ export enum InternalBgMethods {
   GET_CURRENT_NETWORK = 'getCurrentNetwork',
   SWITCH_NETWORK = 'switchNetwork',
   GET_ALL_NETWORKS = 'getAllNetworks',
+  CONVERT_TX_TO_AUTO_EXECUTE = 'convertTxToAutoExecute',
+  GET_DEPLOY_SMART_WALLET_CONTRACT = 'getDeploySmartWalletContract',
 }
 
 export const handleBackgroundMessage: BackgroundOnMessageCallback = async (
@@ -130,6 +134,14 @@ const handleInternal: BackgroundOnMessageCallback<
     return switchNetwork(request, domain);
   } else if (request.msg.method === InternalBgMethods.GET_ALL_NETWORKS) {
     return getAllNetworks(request, domain);
+  } else if (
+    request.msg.method === InternalBgMethods.CONVERT_TX_TO_AUTO_EXECUTE
+  ) {
+    return convertTxToAutoExecute(request, domain);
+  } else if (
+    request.msg.method === InternalBgMethods.GET_DEPLOY_SMART_WALLET_CONTRACT
+  ) {
+    return getDeploySmartWalletContractTx(request, domain);
   } else {
     console.log('bg: internal unknown method');
     throw getCustomError('Invalid background method');

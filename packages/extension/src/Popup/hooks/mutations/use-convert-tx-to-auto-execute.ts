@@ -4,25 +4,25 @@ import { EthereumRequest } from '../../../lib/providers/types';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { InternalBgMethods } from '../../../lib/message-handlers/background-message-handler';
 import { RuntimePostMessagePayloadType } from '../../../lib/message-bridge/types';
-import { DeployedContractResult } from '../../../lib/providers/background/methods/internal/deploySmartWalletContract';
-import { GetDeploySmartWalletContractTxDto } from '../../../lib/providers/background/methods/internal/getDeploySmartWalletContractTx';
+import { ConvertTxToAutoExecuteDto } from '../../../lib/providers/background/methods/internal/convertTxToAutoExecute';
+import { SendTransactionRequestDTO } from '../../../lib/providers/background/methods/external/eth_sendTransaction';
 
-export const useDeployContract = () => {
+export const useConvertTxToAutoExecute = () => {
   return useMutation({
-    mutationFn: async (tx: GetDeploySmartWalletContractTxDto) => {
+    mutationFn: async (tx: ConvertTxToAutoExecuteDto) => {
       const { result, error } = await sendRuntimeMessageToBackground<
-        EthereumRequest<GetDeploySmartWalletContractTxDto>,
-        DeployedContractResult
+        EthereumRequest<ConvertTxToAutoExecuteDto>,
+        SendTransactionRequestDTO
       >(
         {
-          method: InternalBgMethods.DEPLOY_SMART_WALLET_CONTRACT,
+          method: InternalBgMethods.CONVERT_TX_TO_AUTO_EXECUTE,
           params: [tx],
         },
         RuntimePostMessagePayloadType.INTERNAL
       );
 
       if (error || !result) {
-        throw new Error('Failed to deploy contract', { cause: error });
+        throw new Error('Failed to convert', { cause: error });
       }
 
       return result;
