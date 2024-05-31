@@ -14,15 +14,14 @@ export type InitializeWalletPayloadDTO = {
 
 export type UserAccount = {
     address: string,
+    // if exist - its a smart wallet
+    masterAccount?: string
     mnemonicDeriveIndex?: number,
-    isImported: boolean
     privateKey?: string,
-    undasContract: string
+    isImported: boolean
 }
 
-export type UserSelectedAccount = {
-    isUndasContractSelected: boolean
-} & UserAccount
+export type UserSelectedAccount = UserAccount
 
 export const initializeWallet: BackgroundOnMessageCallback<string, EthereumRequest> = async (
     request,
@@ -62,7 +61,6 @@ export const initializeWallet: BackgroundOnMessageCallback<string, EthereumReque
 
     const selectedAccount = {
         ...storageAccount,
-        isUndasContractSelected: false
     } as UserSelectedAccount
 
     await commonStorage.set('passwordHash', hash(payload.walletPassword));

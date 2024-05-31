@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Undas wallet",
-  "description": "Undas wallet",
+  "name": "ProxyWallet",
+  "description": "ProxyWallet",
   "options_page": "options.html",
   "background": {
     "service_worker": "background.bundle.js"

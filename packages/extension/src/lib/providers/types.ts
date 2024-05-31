@@ -154,6 +154,11 @@ export interface EthereumRequest<TParam = any> {
   params?: Array<TParam>;
 }
 
+export interface EthereumRequestOverrideParams<TParam = any> {
+  method: string;
+  params?: TParam;
+}
+
 export interface EthereumResponse {
   result?: any;
   error?: ProviderError;

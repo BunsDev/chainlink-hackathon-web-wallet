@@ -17,7 +17,6 @@ import { getBaseUrl } from '../../../../utils/url';
 import { EthereumRequest } from '../../../types';
 import { UserAccount, UserSelectedAccount } from '../internal/initializeWallet';
 import { getCurrentNetwork } from '../../../../requests/toRpcNode';
-import { Wallet__factory } from '../../../../../typechain';
 
 export const ethSendRawTransaction: BackgroundOnMessageCallback<
   unknown,

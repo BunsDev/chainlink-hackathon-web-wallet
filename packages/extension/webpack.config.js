@@ -4,15 +4,18 @@ var webpack = require('webpack'),
   env = require('./utils/env'),
   CopyWebpackPlugin = require('copy-webpack-plugin'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
+  ReactRefreshTypeScript = require('react-refresh-typescript'),
+  ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin'),
   TerserPlugin = require('terser-webpack-plugin');
 var { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const fs = require('fs');
 const ASSET_PATH = process.env.ASSET_PATH || '/';
+const isDevelopment = process.env.NODE_ENV !== 'production';
 
 var alias = {
-  'react-dom': '@hot-loader/react-dom',
+  // 'react-dom': '@hot-loader/react-dom',
 };
 
 // load the secrets
@@ -36,7 +39,7 @@ if (fileSystem.existsSync(secretsPath)) {
 }
 
 var options = {
-  mode: process.env.NODE_ENV || 'development',
+  mode: isDevelopment ? 'development' : 'production',
   entry: {
     options: path.join(__dirname, 'src', 'Options', 'index'),
     popup: path.join(__dirname, 'src', 'Popup', 'index'),
@@ -95,7 +98,23 @@ var options = {
         loader: 'html-loader',
         exclude: /node_modules/,
       },
-      { test: /\.(ts|tsx)$/, loader: 'ts-loader', exclude: /node_modules/ },
+      {
+        test: /\.(ts|tsx)$/,
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              getCustomTransformers: () => ({
+                before: [isDevelopment && ReactRefreshTypeScript()].filter(
+                  Boolean
+                ),
+              }),
+              transpileOnly: isDevelopment,
+            },
+          },
+        ],
+        exclude: /node_modules/,
+      },
       {
         test: /\.(js|jsx)$/,
         use: [
@@ -104,6 +123,11 @@ var options = {
           },
           {
             loader: 'babel-loader',
+            options: {
+              plugins: [
+                isDevelopment && require.resolve('react-refresh/babel'),
+              ].filter(Boolean),
+            },
           },
         ],
         exclude: /node_modules/,
@@ -176,7 +200,8 @@ var options = {
       chunks: ['panel'],
       cache: false,
     }),
-  ],
+    isDevelopment && new ReactRefreshWebpackPlugin(),
+  ].filter(Boolean),
   infrastructureLogging: {
     level: 'info',
   },

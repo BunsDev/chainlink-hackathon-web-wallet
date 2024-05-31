@@ -32,7 +32,7 @@ export const connectAccount: BackgroundOnMessageCallback<void, EthereumRequest<s
         throw getCustomError('Invalid sender origin')
     }
 
-    let connectedAddresses = await storageDomains.get<string[]>(domain)
+    let connectedAddresses = await storageDomains.get<string[]>(domain) ?? [];
 
     const addressArrayIndex = connectedAddresses?.map(getAddress)?.indexOf(getAddress(accountToConnect));
     

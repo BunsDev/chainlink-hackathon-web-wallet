@@ -1,20 +1,17 @@
 import React from 'react';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { HashRouter as Router } from 'react-router-dom';
 
 import Popup from './Popup';
 import './index.css';
-import { newPopupOnMessage, popupOnMessage } from '../lib/message-bridge/bridge';
-import { EthereumRequest } from '../lib/providers/types';
-import { RuntimeOnMessageResponse, RuntimePostMessagePayload } from '../lib/message-bridge/types';
 
-render(
+const root = window.document.querySelector('#app-container')!;
+createRoot(root).render(
   <React.StrictMode>
     <Router>
       <Popup />
     </Router>
-  </React.StrictMode>,
-  window.document.querySelector('#app-container')
+  </React.StrictMode>
 );
 
 if ((module as any).hot) (module as any).hot.accept();
