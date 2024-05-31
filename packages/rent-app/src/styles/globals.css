@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #f5f7fb;
+    --foreground: #1c1f5a;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+
+    --primary: #3b38d0;
+    --primary-foreground: white;
+
+    --secondary: #deddff;
+    --secondary-foreground: #3b38d0;
+
+    --muted: 0 0% 96.1%;
+    --muted-foreground: #585a93;
+
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: #3b38d0;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply bg-background text-foreground font-ubuntu antialiased;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+  }
+  html,
+  body,
+  #__next {
+    @apply h-full w-full;
+  }
+}
