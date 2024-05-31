@@ -5,22 +5,21 @@ import { InitializeWalletPayloadDTO } from '../../../lib/providers/background/me
 import { InternalBgMethods } from '../../../lib/message-handlers/background-message-handler';
 import { RuntimePostMessagePayloadType } from '../../../lib/message-bridge/types';
 import { SwitchAccountsRequestPayloadDTO } from '../../../lib/providers/background/methods/internal/switchAccount';
-import { ImportSmartWalletPayloadDTO } from '../../../lib/providers/background/methods/internal/importSmartWallet';
 
-export const useImportSmartWallet = () => {
+export const useDisconnectWallet = () => {
   const queryClient = useQueryClient();
   return useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-accounts'] });
     },
-    mutationFn: async (params: ImportSmartWalletPayloadDTO) => {
+    mutationFn: async (account: string) => {
       const { result, error } = await sendRuntimeMessageToBackground<
-        EthereumRequest<ImportSmartWalletPayloadDTO>,
-        string
+        EthereumRequest<string>,
+        void
       >(
         {
-          method: InternalBgMethods.IMPORT_SMART_WALLET,
-          params: [params],
+          method: InternalBgMethods.DISCONNECT_ACCOUNT,
+          params: [account],
         },
         RuntimePostMessagePayloadType.INTERNAL
       );
