@@ -24,6 +24,7 @@ import {
 } from '../../../../../typechain';
 import { hash } from '../../../../utils/crypto';
 import { SendTransactionRequestDTO } from '../external/eth_sendTransaction';
+import { getActiveAccountForSite } from '../../helpers';
 
 export type ConvertTxToAutoExecuteDto = TransactionRequest & {
   executeAfter: number;
@@ -33,7 +34,7 @@ export const convertTxToAutoExecute: BackgroundOnMessageCallback<
   ConvertTxToAutoExecuteDto,
   EthereumRequest<ConvertTxToAutoExecuteDto>
 > = async (request, origin) => {
-  console.log('ethRequestAccounts', request);
+  console.log('convertTxToAutoExecute', request, origin);
   const payload = request.msg;
   const domain = getBaseUrl(origin);
 
@@ -43,12 +44,6 @@ export const convertTxToAutoExecute: BackgroundOnMessageCallback<
 
   const [txRequest] = payload.params;
 
-  console.log('Origin TxRequest', txRequest);
-
-  // const txRequest =   ethers.utils.parseTransaction(txRequestRaw) as TransactionRequest;
-
-  console.log({ txRequest });
-
   const storageAddresses = new Storage(StorageNamespaces.USER_WALLETS);
 
   if (!domain) {
@@ -57,9 +52,7 @@ export const convertTxToAutoExecute: BackgroundOnMessageCallback<
 
   const accounts = await storageAddresses.get<UserAccount[]>('accounts');
 
-  const userSelectedAccount = await storageAddresses.get<UserSelectedAccount>(
-    'selectedAccount'
-  );
+  const userSelectedAccount = await getActiveAccountForSite(domain);
 
   if (!userSelectedAccount) {
     throw getCustomError('ethRequestAccounts: user selected address is null');
@@ -81,8 +74,6 @@ export const convertTxToAutoExecute: BackgroundOnMessageCallback<
       )
     : null;
 
-  console.log({ isSmartAccount });
-
   if (masterWalletAccount === undefined) {
     throw new Error('Master account is not found');
   }
@@ -96,30 +87,31 @@ export const convertTxToAutoExecute: BackgroundOnMessageCallback<
 
   if (!txRequest.to) throw getCustomError('missing argument');
 
-  console.log('tx.to', txRequest.to);
-  console.log('tx.datatx.data', txRequest.data);
-
   const randomSeed = hash(new Date().getTime().toString());
 
   const salt = ethers.utils.solidityKeccak256(['string'], [randomSeed]);
 
+  const originalData = walletContract.interface.decodeFunctionData(
+    'execute',
+    txRequest.data!
+  );
+
   const populatedTx = await walletContract.populateTransaction.addToAutoExecute(
     salt,
     ethers.constants.AddressZero,
-    txRequest.data ?? '0x',
-    txRequest.to,
-    txRequest.value ?? '0',
+    originalData.data ?? '0x',
+    originalData.to,
+    originalData.callValue ?? '0',
     txRequest.executeAfter
   );
 
   txRequest.data = populatedTx.data ?? '0x';
   txRequest.to = populatedTx.to;
 
-  txRequest.gasLimit = await rpcProvider
-    .estimateGas(txRequest as any)
-    .catch((err) => {
-      return BigNumber.from(1_000_000);
-    });
+  txRequest.gasLimit = await rpcProvider.estimateGas(txRequest).catch((err) => {
+    console.log('estimate gas error', err);
+    return BigNumber.from(5_000_000);
+  });
 
   let tx = txRequest;
 

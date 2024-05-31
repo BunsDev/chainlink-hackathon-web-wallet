@@ -27,7 +27,8 @@ import { getCurrentNetwork } from '../../../../requests/toRpcNode';
 import { SmartWalletV1__factory } from '../../../../../typechain';
 import { decryptValue } from '../../../../utils/crypto';
 import { getSessionPassword } from '../../../../storage/common';
-import { getAddress } from 'ethers/lib/utils';
+import { getAddress, formatUnits } from 'ethers/lib/utils';
+import { getActiveAccountForSite } from '../../helpers';
 
 const bnToHex = (value?: BigNumberish) => {
   return value ? BigNumber.from(value).toHexString() : undefined;
@@ -35,8 +36,10 @@ const bnToHex = (value?: BigNumberish) => {
 
 export type SendTransactionRequestDTO = TransactionRequest & {
   useMasterAccountValue?: boolean;
+  isSmartAccount?: boolean;
   isContractWalletDeployment?: boolean;
   executeAfter?: number;
+  totalCost?: number;
 };
 
 export const ethSendTransaction: BackgroundOnMessageCallback<
@@ -68,9 +71,7 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
 
   const accounts = await storageAddresses.get<UserAccount[]>('accounts');
 
-  const userSelectedAccount = await storageAddresses.get<UserSelectedAccount>(
-    'selectedAccount'
-  );
+  const userSelectedAccount = await getActiveAccountForSite(domain);
 
   if (!userSelectedAccount) {
     throw getCustomError('ethRequestAccounts: user selected address is null');
@@ -172,6 +173,9 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
               ...tx,
               isSmartAccount,
               masterWallet: userSelectedAccount.masterAccount,
+              totalCost: +formatUnits(
+                BigNumber.from(tx.gasPrice!).mul(tx.gasLimit!)
+              ),
             },
           ],
         },

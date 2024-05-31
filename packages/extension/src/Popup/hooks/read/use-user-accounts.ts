@@ -37,6 +37,9 @@ export const useUserAccounts = () => {
 
       // FIXME!!
       const selectedAccount = userAccounts.result?.find?.((v) => v.isActive);
+      const connectedAccount = userAccounts.result?.find?.(
+        (v) => v.isActive && v.isConnected
+      );
 
       // FIXME!!
       const selectedAccountSmartWallets = userAccounts.result?.filter?.(
@@ -51,6 +54,7 @@ export const useUserAccounts = () => {
         accounts: userAccounts.result!,
         selectedAccount,
         selectedAccountSmartWallets,
+        connectedAccount,
       };
     },
   });

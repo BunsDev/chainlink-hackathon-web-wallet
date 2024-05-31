@@ -49,6 +49,7 @@ export const getSupportedNetworks = () => {
     {
       jsonRpcUrl:
         'https://sepolia.infura.io/v3/44aadb4903f8450dba123bf5d29a8587',
+      explorer: 'https://sepolia.etherscan.io',
       chainId: 11155111,
       name: 'Sepolia',
       nativeName: 'Sepolia Ether',
@@ -57,6 +58,7 @@ export const getSupportedNetworks = () => {
     {
       jsonRpcUrl:
         'https://mainnet.infura.io/v3/44aadb4903f8450dba123bf5d29a8587',
+      explorer: 'https://etherscan.io',
       chainId: 1,
       name: 'Ethereum',
       nativeName: 'Ether',

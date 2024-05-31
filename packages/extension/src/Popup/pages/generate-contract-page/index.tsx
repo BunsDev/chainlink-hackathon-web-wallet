@@ -9,6 +9,7 @@ import { useGetDeployContract } from '../../hooks/read/use-get-deploy-contract-t
 import { GetDeploySmartWalletContractTxDto } from '../../../lib/providers/background/methods/internal/getDeploySmartWalletContractTx';
 import { useUserAccounts } from '../../hooks/read/use-user-accounts';
 import { useCurrentNetwork } from '../../hooks/read/use-current-network';
+import { getNextAccountId } from '../../../lib/providers/background/methods/internal/initializeWallet';
 
 enum Step {
   Review = 'Review',
@@ -38,7 +39,7 @@ const Review = () => {
             Name of new Smart Contract
           </div>
           <div className="text-[16px] leading-[24px] font-medium">
-            Name-of-your-wallet-1234
+            {data?.accounts && getNextAccountId(data?.accounts!, true).name}
           </div>
         </div>
         <div className="border border-[#D0CFFD] w-full border-dashed" />
@@ -49,7 +50,7 @@ const Review = () => {
           <div className="flex items-center gap-[12px]">
             <img src="/assets/sc_owner.svg" alt="sc_owner" />
             <div className="text-[16px] leading-[24px] font-medium">
-              Name-of-the-owner-of-smart-contract
+              {data?.selectedAccount?.name}
             </div>
           </div>
         </div>

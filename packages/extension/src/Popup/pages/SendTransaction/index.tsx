@@ -42,6 +42,8 @@ import {
 import { format } from 'date-fns';
 import { Calendar } from '../../../components/calendar';
 import { Input } from '../../../components/input';
+import { useUserAccounts } from '../../hooks/read/use-user-accounts';
+import { useConvertTxToAutoExecute } from '../../hooks/mutations/use-convert-tx-to-auto-execute';
 
 enum Tab {
   Details = 'Details',
@@ -60,10 +62,33 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
 }) => {
   const [tab, setTab] = useState(Tab.Details);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [originalTx, setOriginalTx] = useState<SendTransactionRequestDTO>();
   const [txToSign, setTxToSign] = useState<SendTransactionRequestDTO>();
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState<string>();
   const [autoOpened, setAutoOpened] = useState<boolean>(false);
+  const { data } = useUserAccounts();
+  const { mutateAsync: convertTxToAutoExecute } = useConvertTxToAutoExecute();
+
+  const onSaveAutoPaymentClick = useCallback(async () => {
+    if (!originalTx) return;
+
+    if (!date) {
+      setTxToSign(originalTx);
+      setAutoOpened(false); 
+      return;
+    }
+
+    const autoSendTx = await convertTxToAutoExecute({
+      ...originalTx,
+      executeAfter: Math.floor(date.getTime() / 1000),
+    });
+
+    console.log({ autoSendTx });
+
+    setTxToSign(autoSendTx);
+    setAutoOpened(false);
+  }, [originalTx, date, convertTxToAutoExecute]);
 
   const [pagePromise, pagePromiseFunctions] =
     usePagePromise<SendTransactionRequestDTO>();
@@ -90,6 +115,7 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
 
       console.log('Transaction:', tx);
       setTxToSign(tx);
+      setOriginalTx(tx);
       setIsLoaded(true);
       return pagePromise;
     },
@@ -128,10 +154,12 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
         Confirm transaction
       </div>
       <div className="mt-[24px] bg-white rounded-[16px] py-[8px] px-[17px] flex items-center justify-between">
-        <div className="text-[16px] leading-[24px] font-medium">Account 3</div>
+        <div className="text-[16px] leading-[24px] font-medium">
+          {(data?.connectedAccount ?? data?.selectedAccount)?.name}
+        </div>
         <img src="/assets/icon_arrow_right.svg" alt="icon_arrow_right" />
         <div className="text-[16px] leading-[24px] font-medium">
-          {tx?.isContractWalletDeployment
+          {txToSign?.isContractWalletDeployment
             ? 'Wallet deployment'
             : 'Contract interaction'}
         </div>
@@ -233,6 +261,17 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
               <div className="font-medium text-[16px] leading-[24px]">
                 {txToSign?.nonce?.toString()}
               </div>
+
+              {!!txToSign?.executeAfter && (
+                <>
+                  <div className="text-[14px] leading-[24px] text-muted-foreground">
+                    Execute after:
+                  </div>
+                  <div className="font-medium text-[16px] leading-[24px]">
+                    {new Date(txToSign?.executeAfter * 1000).toLocaleString()}
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <div className="mt-[24px] break-words text-[14px] leading-[24px] text-muted-foreground">
@@ -249,14 +288,16 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
               setAutoOpened(v);
             }}
           >
-            <DialogTrigger asChild>
-              <Button
-                variant="secondary"
-                className="w-full mt-[16px] flex justify-center items-center gap-[8px]"
-              >
-                Set Auto Payment <img src={payment} alt="payment" />
-              </Button>
-            </DialogTrigger>
+            {!txToSign?.isContractWalletDeployment && (
+              <DialogTrigger asChild>
+                <Button
+                  variant="secondary"
+                  className="w-full mt-[16px] flex justify-center items-center gap-[8px]"
+                >
+                  Set Auto Payment <img src={payment} alt="payment" />
+                </Button>
+              </DialogTrigger>
+            )}
             <DialogContent
               onInteractOutside={(e) => {
                 e.preventDefault();
@@ -320,12 +361,7 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
                   >
                     Cancel
                   </Button>
-                  <Button
-                    className="flex-1"
-                    onClick={() => {
-                      setAutoOpened(false);
-                    }}
-                  >
+                  <Button className="flex-1" onClick={onSaveAutoPaymentClick}>
                     Save
                   </Button>
                 </div>
