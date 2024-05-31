@@ -25,7 +25,7 @@ import { getActiveAccountForSite } from '../../helpers';
 
 // TODO: move to shared constants
 const factoryAddresses: Record<number, string> = {
-  11155111: '0x7d1F8B741116546911B725E23f96E508fBd4a04E',
+  11155111: '0x690463957Af8ac5bCDf2fac6a433E116774E5E61',
 };
 
 export type GetDeploySmartWalletContractTxDto = SendTransactionRequestDTO & {

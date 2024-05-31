@@ -52,7 +52,7 @@ export const walletRequestAccounts: BackgroundOnMessageCallback<
 
   return connectedAccounts.map((v) => ({
     address: getAddress(v.address),
-    isSmartWallet: !v.masterAccount,
+    isSmartWallet: !!v.masterAccount,
     swartWalletVersion: 'v1',
   }));
 };
