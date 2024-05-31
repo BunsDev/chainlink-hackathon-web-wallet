@@ -22,6 +22,7 @@ import { useSwitchWallet } from '../../hooks/mutations/use-switch-wallet';
 import { getAddress } from 'ethers/lib/utils';
 import { useAllNetworks } from '../../hooks/read/use-all-networks';
 import { useSwitchNetwork } from '../../hooks/mutations/use-switch-network';
+import { shortenAddress } from '../../../lib/utils/address';
 
 const Header = () => {
   const [networkOpened, setNetworkOpened] = useState(false);
@@ -131,9 +132,11 @@ const SubHeader = () => {
           Master account:
         </div>
         <div className="text-[12px] leading-[20px] text-muted-foreground">
-          {data?.selectedAccount?.isSmartContract
-            ? data?.selectedAccount?.masterWallet!
-            : data?.selectedAccount?.address!}
+          {shortenAddress(
+            data?.selectedAccount?.isSmartContract
+              ? data?.selectedAccount?.masterWallet!
+              : data?.selectedAccount?.address!
+          )}
         </div>
       </div>
       <div className="flex gap-[8px]">
@@ -224,12 +227,16 @@ const SubHeader = () => {
 const Balance = () => {
   const { data } = useUserAccounts();
   const { data: currentNetwork } = useCurrentNetwork();
+  const formatBalance = (balance?: string) => {
+    return balance ? parseFloat(balance).toFixed(4) : '0.0000';
+  };
 
   return (
     <div className="flex flex-col items-center gap-[16px] mt-[24px]">
       <img src="/assets/icon_ethereum.svg" alt="ethereum" />
       <div className="text-[32px] leading-[40px] font-medium">
-        {data?.selectedAccount?.balanceNative} {currentNetwork?.nativeSymbol}
+        {formatBalance(data?.selectedAccount?.balanceNative)}{' '}
+        {currentNetwork?.nativeSymbol}
       </div>
       <div className="text-[16px] leading-[24px] text-muted-foreground">
         $206.00
