@@ -1,71 +1,91 @@
-import { getCustomError } from "../../../../errors";
-import { BackgroundOnMessageCallback } from "../../../../message-bridge/bridge";
-import { RuntimePostMessagePayload } from "../../../../message-bridge/types";
-import Storage, { StorageNamespaces } from "../../../../storage";
-import { getSessionPassword, setSessionPassword } from "../../../../storage/common";
-import { getDeriveAccount } from "../../../../utils/accounts";
-import { encryptValue, hash } from "../../../../utils/crypto";
-import { EthereumRequest } from "../../../types";
+import { getCustomError } from '../../../../errors';
+import { BackgroundOnMessageCallback } from '../../../../message-bridge/bridge';
+import { RuntimePostMessagePayload } from '../../../../message-bridge/types';
+import Storage, { StorageNamespaces } from '../../../../storage';
+import {
+  getSessionPassword,
+  setSessionPassword,
+} from '../../../../storage/common';
+import { getDeriveAccount } from '../../../../utils/accounts';
+import { encryptValue, hash } from '../../../../utils/crypto';
+import { EthereumRequest } from '../../../types';
 
 export type InitializeWalletPayloadDTO = {
-    mnemonic: string;
-    walletPassword: string
-}
+  mnemonic: string;
+  walletPassword: string;
+};
 
 export type UserAccount = {
-    address: string,
-    // if exist - its a smart wallet
-    masterAccount?: string
-    mnemonicDeriveIndex?: number,
-    privateKey?: string,
-    isImported: boolean
-}
+  address: string;
+  // if exist - its a smart wallet
+  masterAccount?: string;
+  mnemonicDeriveIndex?: number;
+  privateKey?: string;
+  name: string;
+  id: number;
+  isImported: boolean;
+};
 
-export type UserSelectedAccount = UserAccount
+export type UserSelectedAccount = UserAccount;
 
-export const initializeWallet: BackgroundOnMessageCallback<string, EthereumRequest> = async (
-    request,
-    domain
+export const getNextAccountId = (
+  accounts: UserAccount[],
+  smartWallet: boolean
 ) => {
-    const msg = request.msg;
+  const id = accounts.filter((v) =>
+    smartWallet ? !!v.masterAccount : !v.masterAccount
+  ).length;
 
-    if (!msg || !msg.params?.length) throw getCustomError('Invalid payload');
+  return {
+    id,
+    name: smartWallet ? `Smart account ${id + 1}` : `Account ${id + 1}`,
+  };
+};
 
-    const payload = msg.params[0] as InitializeWalletPayloadDTO;
+export const initializeWallet: BackgroundOnMessageCallback<
+  string,
+  EthereumRequest
+> = async (request, domain) => {
+  const msg = request.msg;
 
-    console.log('initializePayload', payload);
+  if (!msg || !msg.params?.length) throw getCustomError('Invalid payload');
 
-    const storageWallets = new Storage(StorageNamespaces.USER_WALLETS);
-    const commonStorage = new Storage(StorageNamespaces.COMMON);
+  const payload = msg.params[0] as InitializeWalletPayloadDTO;
 
-    console.log('mnemonic: ', payload.mnemonic);
+  console.log('initializePayload', payload);
 
-    if (await storageWallets.get('mnemonic'))
-        throw getCustomError('Already initialized');
+  const storageWallets = new Storage(StorageNamespaces.USER_WALLETS);
+  const commonStorage = new Storage(StorageNamespaces.COMMON);
 
-    await storageWallets.set(
-      'mnemonic',
-      encryptValue(payload.mnemonic, payload.walletPassword)
-    );
+  console.log('mnemonic: ', payload.mnemonic);
 
-    await setSessionPassword(payload.walletPassword);
+  if (await storageWallets.get('mnemonic'))
+    throw getCustomError('Already initialized');
 
-    const account = getDeriveAccount(payload.mnemonic, 0);
+  await storageWallets.set(
+    'mnemonic',
+    encryptValue(payload.mnemonic, payload.walletPassword)
+  );
 
-    const storageAccount = {
-      address: account.address,
-      mnemonicDeriveIndex: 0,
-      privateKey: encryptValue(account.privateKey, payload.walletPassword),
-      isImported: false,
-    } as UserAccount;
+  await setSessionPassword(payload.walletPassword);
 
-    const selectedAccount = {
-        ...storageAccount,
-    } as UserSelectedAccount
+  const account = getDeriveAccount(payload.mnemonic, 0);
 
-    await commonStorage.set('passwordHash', hash(payload.walletPassword));
-    await storageWallets.set('accounts', [storageAccount]);
-    await storageWallets.set('selectedAccount', selectedAccount);
+  const storageAccount = {
+    address: account.address,
+    mnemonicDeriveIndex: 0,
+    privateKey: encryptValue(account.privateKey, payload.walletPassword),
+    isImported: false,
+    ...getNextAccountId([], false),
+  } as UserAccount;
 
-    return account.address;
-}
+  const selectedAccount = {
+    ...storageAccount,
+  } as UserSelectedAccount;
+
+  await commonStorage.set('passwordHash', hash(payload.walletPassword));
+  await storageWallets.set('accounts', [storageAccount]);
+  await storageWallets.set('selectedAccount', selectedAccount);
+
+  return account.address;
+};

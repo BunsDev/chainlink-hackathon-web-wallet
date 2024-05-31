@@ -13,6 +13,7 @@ import { createWalletClient, http,  } from 'viem';
 import { getPopupPath, UIRoutes } from '../../../../popup-routes';
 import { getCurrentNetwork } from '../../../../requests/toRpcNode';
 import { privateKeyToAccount } from 'viem/accounts';
+import { getActiveAccountForSite } from '../../helpers';
 export type SignTypedDataV4ParamsDto = any;
 
 export type SignTypedDataV4Dto = [string, SignTypedDataV4ParamsDto];
@@ -20,7 +21,7 @@ export type SignTypedDataV4Dto = [string, SignTypedDataV4ParamsDto];
 export const ethSignTypedDataV4: BackgroundOnMessageCallback<
   unknown,
   EthereumRequestOverrideParams<SignTypedDataV4Dto>
-> = async (request, origin) => {
+> = async (request, domain) => {
   console.log('ethSignTypedDataV4', request);
   const payload = request.msg;
 
@@ -33,9 +34,7 @@ export const ethSignTypedDataV4: BackgroundOnMessageCallback<
   const storageAddresses = new Storage(StorageNamespaces.USER_WALLETS);
   const accounts = await storageAddresses.get<UserAccount[]>('accounts');
 
-  const userSelectedAccount = await storageAddresses.get<UserSelectedAccount>(
-    'selectedAccount'
-  );
+  const userSelectedAccount = await getActiveAccountForSite(domain);
 
   if (!userSelectedAccount) {
     throw getCustomError('ethRequestAccounts: user selected address is null');
@@ -103,6 +102,6 @@ export const ethSignTypedDataV4: BackgroundOnMessageCallback<
     ...JSON.parse(data),
   });
 
-  console.log('signed data', signedData)
+  console.log('signed data', signedData);
   return signedData;
 };

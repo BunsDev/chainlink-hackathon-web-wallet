@@ -16,7 +16,7 @@ import Storage, { StorageNamespaces } from '../../../../storage';
 import { getBaseUrl } from '../../../../utils/url';
 import { EthereumRequest } from '../../../types';
 import { UserAccount, UserSelectedAccount } from '../internal/initializeWallet';
-import { getCurrentNetwork } from '../../../../requests/toRpcNode';
+import { getCurrentNetwork, getNetwork } from '../../../../requests/toRpcNode';
 
 export const ethSendRawTransaction: BackgroundOnMessageCallback<
   unknown,
@@ -32,7 +32,7 @@ export const ethSendRawTransaction: BackgroundOnMessageCallback<
 
   const [signedTx] = payload.params;
 
-  const { rpcProvider } = await getCurrentNetwork();
+  const { rpcProvider, name } = await getCurrentNetwork();
   const txResponse = await rpcProvider.sendTransaction(signedTx);
 
   const txParsed = ethers.utils.parseTransaction(signedTx);
@@ -69,10 +69,9 @@ export const ethSendRawTransaction: BackgroundOnMessageCallback<
 
         const sendNotification = () => {
           chrome.notifications.create(
-            txResponse.hash,
+            `TX|${txResponse.hash}|${name}`,
             {
-              // TODO: replace icon
-              iconUrl: 'http://www.google.com/favicon.ico',
+              iconUrl: 'https://proxy-rent.netlify.app/favicon.ico',
               message:
                 txRecord.status === 'dropped'
                   ? ':('
@@ -99,7 +98,7 @@ export const ethSendRawTransaction: BackgroundOnMessageCallback<
           // tx was mined
           clearInterval(interval);
           txRecord.confirmed = true;
-          txRecord.status = txReceipt.status === 0 ? 'successful' : 'failed';
+          txRecord.status = txReceipt.status === 0 ? 'failed' : 'successful';
           sendNotification();
           await save();
         } else if (!tx && !txReceipt) {

@@ -14,7 +14,9 @@ export type GetAccountsDTO = {
   isActive: boolean;
   balanceNative: string;
   isSmartContract: boolean;
-  masterWallet?: string
+  masterWallet?: string;
+  name: string;
+  id: number;
 };
 
 export const getUserAddresses: BackgroundOnMessageCallback<
@@ -62,6 +64,8 @@ export const getUserAddresses: BackgroundOnMessageCallback<
         return {
           address: acc.address,
           isActive: isSelected,
+          name: acc.name,
+          id: acc.id,
           isImported: acc.isImported,
           isConnected: connectedAccounts
             ? connectedAccounts

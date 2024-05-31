@@ -21,16 +21,16 @@ import { getCurrentNetwork } from '../../../../requests/toRpcNode';
 import { SmartWalletFactoryV1__factory } from '../../../../../typechain';
 import { hash } from '../../../../utils/crypto';
 import { SendTransactionRequestDTO } from '../external/eth_sendTransaction';
+import { getActiveAccountForSite } from '../../helpers';
 
 // TODO: move to shared constants
 const factoryAddresses: Record<number, string> = {
-  11155111: '0x74Fc48A59593e3E694E4821679e6BFA8dc8F934F',
+  11155111: '0x7d1F8B741116546911B725E23f96E508fBd4a04E',
 };
 
-export type GetDeploySmartWalletContractTxDto = TransactionRequest & {
+export type GetDeploySmartWalletContractTxDto = SendTransactionRequestDTO & {
   address: string;
   salt: string;
-  totalCost: number;
 };
 
 export const getDeploySmartWalletContractTx: BackgroundOnMessageCallback<
@@ -41,9 +41,7 @@ export const getDeploySmartWalletContractTx: BackgroundOnMessageCallback<
 
   const storageWallets = new Storage(StorageNamespaces.USER_WALLETS);
 
-  const selectedAccount = await storageWallets.get<UserSelectedAccount>(
-    'selectedAccount'
-  );
+  const selectedAccount = await getActiveAccountForSite(domain);
 
   if (!selectedAccount) throw getCustomError('Selected addresses is null');
 
@@ -96,6 +94,7 @@ export const getDeploySmartWalletContractTx: BackgroundOnMessageCallback<
   return {
     ...deployTx,
     salt,
+    isContractWalletDeployment: true,
     address: deploymentAddress,
     totalCost: +formatUnits(
       BigNumber.from(deployTx.gasPrice!).mul(deployTx.gasLimit!)

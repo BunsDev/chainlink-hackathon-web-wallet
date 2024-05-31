@@ -15,7 +15,11 @@ import {
 import Storage, { StorageNamespaces } from '../../../../storage';
 import { getBaseUrl } from '../../../../utils/url';
 import { EthereumRequest } from '../../../types';
-import { UserAccount, UserSelectedAccount } from './initializeWallet';
+import {
+  getNextAccountId,
+  UserAccount,
+  UserSelectedAccount,
+} from './initializeWallet';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { getCurrentNetwork } from '../../../../requests/toRpcNode';
 import { SmartWalletFactoryV1__factory } from '../../../../../typechain';
@@ -71,6 +75,7 @@ export const deploySmartWalletContract: BackgroundOnMessageCallback<
     address: tx.address,
     isImported: false,
     masterAccount: tx.from,
+    ...getNextAccountId(accounts, true),
   });
 
   await storageWallets.set('accounts', accounts);

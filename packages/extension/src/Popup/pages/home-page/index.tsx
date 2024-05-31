@@ -185,7 +185,7 @@ const SubHeader = () => {
                 <div className="flex items-center gap-[8px] cursor-pointer">
                   <div>
                     {data?.selectedAccount?.isSmartContract
-                      ? data?.selectedAccount.address
+                      ? shortenAddress(data?.selectedAccount.address)
                       : '-'}
                   </div>
                   <div>
@@ -212,7 +212,7 @@ const SubHeader = () => {
                     id={s.address}
                     onClick={onSmartWalletItemClick}
                   >
-                    {s.address}
+                    {shortenAddress(s.address)}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
