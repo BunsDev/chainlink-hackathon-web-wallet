@@ -24,7 +24,7 @@ import { SendTransactionRequestDTO } from '../external/eth_sendTransaction';
 
 // TODO: move to shared constants
 const factoryAddresses: Record<number, string> = {
-  11155111: '0xAb6Cb2842DEfDEfA0978cD1e65D59DBfbd8518F2',
+  11155111: '0x74Fc48A59593e3E694E4821679e6BFA8dc8F934F',
 };
 
 export type DeployedContractResult = {
