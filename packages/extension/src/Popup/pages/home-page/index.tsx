@@ -1,4 +1,4 @@
-import { Check, ChevronDown, Menu } from 'lucide-react';
+import { Check, ChevronDown, Loader2, Menu } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollArea } from '../../../components/scroll-area';
 import copyIcon from '../../../assets/img/icon_copy.svg';
@@ -33,6 +33,9 @@ import QRCode from 'react-qr-code';
 import toast from 'react-hot-toast';
 import { useImportSmartWallet } from '../../hooks/mutations/use-import-smart-wallet';
 import { useDisconnectWallet } from '../../hooks/mutations/use-disconnect-wallet';
+import Browser from 'webextension-polyfill';
+import { Input } from '../../../components/input';
+import { useTransfer } from '../../hooks/mutations/use-transfer';
 
 const Header = () => {
   const [networkOpened, setNetworkOpened] = useState(false);
@@ -292,7 +295,8 @@ const Main = () => {
       {
         title: 'NFT rental',
         icon: '/assets/nft_rental.svg',
-        onClick: () => {},
+        onClick: () =>
+          Browser.tabs.create({ url: 'https://proxy-rent.netlify.app' }),
       },
       {
         title: 'Account transfer',
@@ -325,13 +329,112 @@ const Main = () => {
   );
 };
 
-const Buttons = () => {
-  const { data } = useUserAccounts();
+const Transfer = () => {
+  const [amount, setAmount] = useState(0);
+  const [address, setAddress] = useState('');
+  const [opened, setOpened] = useState(false);
+  const { mutateAsync: transfer, isPending } = useTransfer();
+
+  const onAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+
+    if (value < 0 || isNaN(value)) {
+      return;
+    }
+
+    setAmount(value);
+  };
+
+  const onTransfer = async () => {
+    let parsedAddress = '';
+    try {
+      parsedAddress = getAddress(address);
+    } catch (e) {
+      toast.error('Invalid address');
+      return;
+    }
+
+    if (amount <= 0) {
+      toast.error('Invalid amount');
+      return;
+    }
+
+    try {
+      const result = await transfer({ address: parsedAddress, amount });
+      alert(result);
+      toast.success('Transfer successful');
+    } catch (e) {
+      toast.error('Transfer failed');
+    }
+  };
+
+  return (
+    <Dialog open={opened} onOpenChange={setOpened}>
+      <DialogTrigger asChild>
+        <Button className="max-w-[170px] w-full">Transfer</Button>
+      </DialogTrigger>
+      <DialogContent
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+      >
+        <div className="flex flex-col gap-[24px] font-sans">
+          <div className="flex flex-col gap-[8px]">
+            <div className="text-[20px] leading-[32px] font-bold">Transfer</div>
+            <div className="text-[16px] leading-[24px] text-muted-foreground">
+              Fill in the following details:
+            </div>
+          </div>
+          <div className="flex flex-col gap-[16px]">
+            <div className="flex flex-col gap-[4px]">
+              <div className="text-[14px] leading-[24px]">Enter amount</div>
+              <Input
+                type="number"
+                min={0}
+                step={0.01}
+                placeholder="0.00"
+                onChange={onAmountChange}
+                className="px-[16px] py-[12px] rounded-[12px] bg-background text-[16px] leading-[24px] placeholder:text-[#8e90be] text-foreground"
+              />
+            </div>
+            <div className="flex flex-col gap-[4px]">
+              <div className="text-[14px] leading-[24px]">Enter address</div>
+              <Input
+                min={0}
+                step={0.01}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Enter public address (0x)"
+                className="px-[16px] py-[12px] rounded-[12px] bg-background text-[16px] leading-[24px] placeholder:text-[#8e90be] text-foreground"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-[16px]">
+            <Button
+              className="flex-1"
+              variant="outline"
+              onClick={() => setOpened(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="flex-1"
+              disabled={isPending}
+              onClick={onTransfer}
+            >
+              {isPending && <Loader2 className="mr-2" />}Transfer
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+interface DepositProps {
+  value: string;
+}
+const Deposit = ({ value }: DepositProps) => {
   const [copied, setCopied] = useState(false);
-  const value =
-    (data?.selectedAccount?.isSmartContract
-      ? data?.selectedAccount?.masterWallet
-      : data?.selectedAccount?.address) ?? '';
 
   const onCopy = () => {
     navigator.clipboard.writeText(value);
@@ -343,56 +446,67 @@ const Buttons = () => {
   };
 
   return (
-    <div className="flex items-center gap-[24px] mt-[54px] justify-center mb-[30px]">
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button variant="outline" className="max-w-[170px] w-full">
-            Deposit
-          </Button>
-        </DialogTrigger>
-        <DialogContent
-          onInteractOutside={(e) => {
-            e.preventDefault();
-          }}
-        >
-          <div className="flex flex-col gap-[16px] font-sans">
-            <div className="flex flex-col gap-[8px]">
-              <div className="text-[20px] leading-[32px] font-bold">
-                Deposit
-              </div>
-              <div className="text-[16px] leading-[24px] text-muted-foreground">
-                Scan QR code to proceed with deposit:
-              </div>
-            </div>
-            <div className="bg-background rounded-[13px] p-[16px] flex flex-col gap-[24px]">
-              <div className="flex flex-col gap-[4px]">
-                <div className="text-[12px] leading-[20px] font-medium">
-                  Address:
-                </div>
-                <div className="flex items-center gap-[8px]">
-                  <div className="text-[14px] leading-[22px] text-muted-foreground truncate">
-                    {shortenAddress(value, 7)}
-                  </div>
-                  {copied ? (
-                    <Check className="text-primary w-[18px] h-[18px]" />
-                  ) : (
-                    <img
-                      src={copyIcon}
-                      alt="copy"
-                      className="cursor-pointer"
-                      onClick={onCopy}
-                    />
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center justify-center">
-                <QRCode value={value} className="w-[156px] h-[156px]" />
-              </div>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="max-w-[170px] w-full">
+          Deposit
+        </Button>
+      </DialogTrigger>
+      <DialogContent
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+      >
+        <div className="flex flex-col gap-[16px] font-sans">
+          <div className="flex flex-col gap-[8px]">
+            <div className="text-[20px] leading-[32px] font-bold">Deposit</div>
+            <div className="text-[16px] leading-[24px] text-muted-foreground">
+              Scan QR code to proceed with deposit:
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
-      <Button className="max-w-[170px] w-full">Transfer</Button>
+          <div className="bg-background rounded-[13px] p-[16px] flex flex-col gap-[24px]">
+            <div className="flex flex-col gap-[4px]">
+              <div className="text-[12px] leading-[20px] font-medium">
+                Address:
+              </div>
+              <div className="flex items-center gap-[8px]">
+                <div className="text-[14px] leading-[22px] text-muted-foreground truncate">
+                  {shortenAddress(value, 7)}
+                </div>
+                {copied ? (
+                  <Check className="text-primary w-[18px] h-[18px]" />
+                ) : (
+                  <img
+                    src={copyIcon}
+                    alt="copy"
+                    className="cursor-pointer"
+                    onClick={onCopy}
+                  />
+                )}
+              </div>
+            </div>
+            <div className="flex items-center justify-center">
+              <QRCode value={value} className="w-[156px] h-[156px]" />
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const Buttons = () => {
+  const { data } = useUserAccounts();
+
+  const value =
+    (data?.selectedAccount?.isSmartContract
+      ? data?.selectedAccount?.masterWallet
+      : data?.selectedAccount?.address) ?? '';
+
+  return (
+    <div className="flex items-center gap-[24px] mt-[54px] justify-center mb-[30px]">
+      <Deposit value={value} />
+      <Transfer />
     </div>
   );
 };
