@@ -24,6 +24,24 @@ import { cn } from '../../../lib/utils/cn';
 import { ScrollArea } from '../../../components/scroll-area';
 import { Button } from '../../../components/button';
 import { SendTransactionRequestDTO } from '../../../lib/providers/background/methods/external/eth_sendTransaction';
+import payment from '../../../assets/img/icon_payment.svg';
+import calendar from '../../../assets/img/icon_calendar.svg';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../../../components/dialog';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '../../../components/popover';
+import { format } from 'date-fns';
+import { Calendar } from '../../../components/calendar';
+import { Input } from '../../../components/input';
 
 enum Tab {
   Details = 'Details',
@@ -43,6 +61,9 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
   const [tab, setTab] = useState(Tab.Details);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [txToSign, setTxToSign] = useState<SendTransactionRequestDTO>();
+  const [date, setDate] = useState<Date>();
+  const [time, setTime] = useState<string>();
+  const [autoOpened, setAutoOpened] = useState<boolean>(false);
 
   const [pagePromise, pagePromiseFunctions] =
     usePagePromise<SendTransactionRequestDTO>();
@@ -125,7 +146,10 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
           </div>
         </div>
         <div
-          className={cn("flex flex-col gap-[8px]", !tx?.isContractWalletDeployment && 'hidden')}
+          className={cn(
+            'flex flex-col gap-[8px]',
+            !tx?.isContractWalletDeployment && 'hidden'
+          )}
         >
           <div className="text-[14px] leading-[24px] text-muted-foreground">
             Contract deployment:
@@ -215,9 +239,102 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
               {txToSign?.data?.toString()}
             </div>
           )}
+          <Dialog
+            open={autoOpened}
+            onOpenChange={(v) => {
+              if (!v) {
+                setDate(undefined);
+                setTime(undefined);
+              }
+              setAutoOpened(v);
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button
+                variant="secondary"
+                className="w-full mt-[16px] flex justify-center items-center gap-[8px]"
+              >
+                Set Auto Payment <img src={payment} alt="payment" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent
+              onInteractOutside={(e) => {
+                e.preventDefault();
+              }}
+            >
+              <div className="flex flex-col gap-[24px] font-sans">
+                <div className="text-[20px] leading-[32px] font-bold">
+                  Set Auto Payment
+                </div>
+                <div className="flex flex-col gap-[4px]">
+                  <div className="text-[14px] leading-[24px] text-muted-foreground">
+                    Select date
+                  </div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className={cn(
+                          'flex items-center justify-between w-full gap-[8px] text-left font-normal',
+                          !date && 'text-muted-foreground'
+                        )}
+                      >
+                        {date ? (
+                          format(date, 'dd/MM/yyyy')
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <img src={calendar} alt="calendar" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0 w-auto border-none">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="flex flex-col gap-[4px]">
+                  <div className="text-[14px] leading-[24px] text-muted-foreground">
+                    Select time
+                  </div>
+                  <Input
+                    type="time"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                    lang="en-US"
+                  />
+                </div>
+                <div className="flex w-full items-center gap-[8px]">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setDate(undefined);
+                      setTime(undefined);
+                      setAutoOpened(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={() => {
+                      setAutoOpened(false);
+                    }}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
-      <div className="flex items-center gap-[24px]">
+      <div className="flex items-center gap-[24px] mt-[32px]">
         <Button variant="outline" className="flex-1" onClick={discardTx}>
           Reject
         </Button>

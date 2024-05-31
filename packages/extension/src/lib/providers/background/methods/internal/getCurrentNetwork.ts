@@ -12,6 +12,7 @@ export type GetCurrentNetworkDTO = {
   chainId: number;
   nativeSymbol: string;
   nativeName: string;
+  isActive: boolean
 };
 
 export const getCurrentNetwork: BackgroundOnMessageCallback<
@@ -29,5 +30,6 @@ export const getCurrentNetwork: BackgroundOnMessageCallback<
     name: network.name,
     nativeName: network.nativeName,
     nativeSymbol: network.nativeSymbol,
+    isActive: true
   };
 };

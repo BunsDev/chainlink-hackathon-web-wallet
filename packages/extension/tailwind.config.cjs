@@ -18,7 +18,7 @@ module.exports = {
         foreground: 'var(--foreground)',
         primary: {
           DEFAULT: 'var(--primary)',
-          foreground: 'hsl(var(--primary-foreground))',
+          foreground: 'var(--primary-foreground)',
         },
         secondary: {
           DEFAULT: 'var(--secondary)',
@@ -33,12 +33,12 @@ module.exports = {
           foreground: 'var(--muted-foreground)',
         },
         accent: {
-          DEFAULT: 'hsl(var(--accent))',
+          DEFAULT: 'var(--accent)',
           foreground: 'var(--accent-foreground)',
         },
         popover: {
           DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
+          foreground: 'var(--popover-foreground)',
         },
         card: {
           DEFAULT: 'hsl(var(--card))',

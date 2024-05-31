@@ -18,11 +18,20 @@ import { getUserAddresses } from '../providers/background/methods/internal/getUs
 import { initializeWallet } from '../providers/background/methods/internal/initializeWallet';
 import { isWalletInitialized } from '../providers/background/methods/internal/isWalletInitialized';
 import { switchAccount } from '../providers/background/methods/internal/switchAccount';
-import { EthereumRequest } from '../providers/types';
+import {
+  EthereumRequest,
+  EthereumRequestOverrideParams,
+} from '../providers/types';
 import { makeRpcRequest } from '../requests/toRpcNode';
 import { walletRequestAccounts } from '../providers/background/methods/external/wallet_requestAccounts';
 import { passwordHash } from '../providers/background/methods/internal/passwordHash';
 import { getCurrentNetwork } from '../providers/background/methods/internal/getCurrentNetwork';
+import { switchNetwork } from '../providers/background/methods/internal/switchNetwork';
+import { getAllNetworks } from '../providers/background/methods/internal/getAllNetworks';
+import { ethSignTypedDataV4 } from '../providers/background/methods/external/eth_signTypedData_v4';
+import { ethEstimateGas } from '../providers/background/methods/external/eth_estimateGas';
+import { convertTxToAutoExecute } from '../providers/background/methods/internal/convertTxToAutoExecute';
+import { getDeploySmartWalletContractTx } from '../providers/background/methods/internal/getDeploySmartWalletContractTx';
 
 export enum InternalBgMethods {
   IS_LOCKED = 'isLocked',
@@ -36,6 +45,10 @@ export enum InternalBgMethods {
   CONNECT_ACCOUNT = 'connectAccount',
   IMPORT_CONTRACT = 'importContract',
   GET_CURRENT_NETWORK = 'getCurrentNetwork',
+  SWITCH_NETWORK = 'switchNetwork',
+  GET_ALL_NETWORKS = 'getAllNetworks',
+  CONVERT_TX_TO_AUTO_EXECUTE = 'convertTxToAutoExecute',
+  GET_DEPLOY_SMART_WALLET_CONTRACT = 'getDeploySmartWalletContract',
 }
 
 export const handleBackgroundMessage: BackgroundOnMessageCallback = async (
@@ -57,7 +70,7 @@ export const handleBackgroundMessage: BackgroundOnMessageCallback = async (
 
 const handleExternal: BackgroundOnMessageCallback<
   any,
-  EthereumRequest
+  EthereumRequestOverrideParams
 > = async (request, domain) => {
   if (!request.msg) throw getCustomError('Invalid payload');
 
@@ -75,9 +88,14 @@ const handleExternal: BackgroundOnMessageCallback<
     return ethSendTransaction(request, domain);
   } else if (request.msg.method === 'eth_sendRawTransaction') {
     return ethSendRawTransaction(request, domain);
+  } else if (request.msg.method === 'eth_signTypedData_v4') {
+    return ethSignTypedDataV4(request, domain);
   } else if (request.msg.method === 'eth_call') {
     return ethCall(request, domain);
+  } else if (request.msg.method === 'eth_estimateGas') {
+    return ethEstimateGas(request, domain);
   } else {
+    console.log('making direct rpc request');
     return makeRpcRequest(request, domain);
   }
 };
@@ -112,6 +130,18 @@ const handleInternal: BackgroundOnMessageCallback<
     return passwordHash(request, domain);
   } else if (request.msg.method === InternalBgMethods.GET_CURRENT_NETWORK) {
     return getCurrentNetwork(request, domain);
+  } else if (request.msg.method === InternalBgMethods.SWITCH_NETWORK) {
+    return switchNetwork(request, domain);
+  } else if (request.msg.method === InternalBgMethods.GET_ALL_NETWORKS) {
+    return getAllNetworks(request, domain);
+  } else if (
+    request.msg.method === InternalBgMethods.CONVERT_TX_TO_AUTO_EXECUTE
+  ) {
+    return convertTxToAutoExecute(request, domain);
+  } else if (
+    request.msg.method === InternalBgMethods.GET_DEPLOY_SMART_WALLET_CONTRACT
+  ) {
+    return getDeploySmartWalletContractTx(request, domain);
   } else {
     console.log('bg: internal unknown method');
     throw getCustomError('Invalid background method');

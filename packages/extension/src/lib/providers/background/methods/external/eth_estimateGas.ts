@@ -24,11 +24,11 @@ import { getActiveAccountForSite } from '../../helpers';
 import { getAddress } from 'ethers/lib/utils';
 import { SmartWalletV1__factory } from '../../../../../typechain';
 
-export const ethCall: BackgroundOnMessageCallback<
+export const ethEstimateGas: BackgroundOnMessageCallback<
   unknown,
   EthereumRequest<TransactionRequest>
 > = async (request, origin) => {
-  console.log('ethCall', request);
+  console.log('ethEstimateGas', request);
   const payload = request.msg;
   const domain = getBaseUrl(origin);
 
@@ -71,12 +71,11 @@ export const ethCall: BackgroundOnMessageCallback<
   txRequest.from ??= senderAddress;
 
   if (isSmartAccount) {
-    console.log('eth_call through contract');
+    console.log('eth_estimateGas through contract');
     txRequest.from = userSelectedAccount.masterAccount!;
 
     if (!txRequest.to) throw getCustomError('missing argument');
 
-    // if to !== smart contract, then proxify the calll
     if (getAddress(txRequest.to) !== getAddress(userSelectedAccount.address)) {
       const walletContract = SmartWalletV1__factory.connect(
         userSelectedAccount.address,
@@ -100,9 +99,28 @@ export const ethCall: BackgroundOnMessageCallback<
     }
   }
 
+  // if (!txRequest.nonce) {
+  //     txRequest.nonce = await rpcProvider.getTransactionCount(userSelectedAccount.address)
+  // }
+
+  // // if (!txRequest.gasPrice) {
+  // //     const estimatedGasPrice = await rpcProvider.getFeeData();
+
+  // //     txRequest.gasPrice = estimatedGasPrice.gasPrice?.toHexString() ?? undefined;
+  // // }
+
+  // if (!txRequest.gasLimit) {
+  //     const estimatedGas = await rpcProvider.estimateGas(txRequest).catch(err => {console.error(err); return BigNumber.from(1_000_000)});
+  //     txRequest.gasLimit =
+  //         // (txRequest as any).gas?.toString() ??
+  //         estimatedGas.toHexString();
+  // }
+
+  // delete (txRequest as any).gas;
+
   payload.params[0] = txRequest;
 
-  console.log('eth call request', request);
+  console.log('estimate transaction request', request);
 
   return makeRpcRequest(request, origin);
 };

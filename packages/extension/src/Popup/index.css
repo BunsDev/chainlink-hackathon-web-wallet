@@ -12,7 +12,7 @@
     --muted-foreground: #585a93;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: #1c1f5a;
 
     --border: #3b38d0;
     --input: 214.3 31.8% 91.4%;
@@ -21,12 +21,12 @@
     --card-foreground: 222.2 47.4% 11.2%;
 
     --primary: #3b38d0;
-    --primary-foreground: 210 40% 98%;
+    --primary-foreground: white;
 
     --secondary: #eeedff;
     --secondary-foreground: #3b38d0;
 
-    --accent: 210 40% 96.1%;
+    --accent: #f5f7fb;
     --accent-foreground: #1c1f5a;
 
     --destructive: 0 100% 50%;
@@ -53,6 +53,6 @@
   }
 
   #app-container {
-    @apply w-[441px] h-[600px] relative mx-auto bg-background;
+    @apply w-[441px] min-h-[600px] max-h-[650px] h-full relative mx-auto bg-background;
   }
 }

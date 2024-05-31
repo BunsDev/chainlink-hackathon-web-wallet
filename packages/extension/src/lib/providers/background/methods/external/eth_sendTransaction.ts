@@ -36,6 +36,7 @@ const bnToHex = (value?: BigNumberish) => {
 export type SendTransactionRequestDTO = TransactionRequest & {
   useMasterAccountValue?: boolean;
   isContractWalletDeployment?: boolean;
+  executeAfter?: number;
 };
 
 export const ethSendTransaction: BackgroundOnMessageCallback<
@@ -81,9 +82,13 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
 
   const masterWalletAccount = isSmartAccount
     ? accounts?.find(
-        (v) => getAddress(v.address) === userSelectedAccount.address
+        (v) =>
+          getAddress(v.address) ===
+          getAddress(userSelectedAccount.masterAccount!)
       )
     : null;
+
+  console.log({ isSmartAccount });
 
   if (masterWalletAccount === undefined) {
     throw new Error('Master account is not found');
@@ -96,30 +101,37 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
   txRequest.from ??= senderAddress;
 
   if (isSmartAccount) {
-    const walletContract = SmartWalletV1__factory.connect(
-      userSelectedAccount.address,
-      rpcProvider
-    );
+    txRequest.from = masterWalletAccount?.address!;
 
     if (!txRequest.to) throw getCustomError('missing argument');
 
-    console.log('tx.to', txRequest.to);
-    console.log('tx.datatx.data', txRequest.data);
+    if (getAddress(txRequest.to) !== getAddress(userSelectedAccount.address)) {
+      const walletContract = SmartWalletV1__factory.connect(
+        userSelectedAccount.address,
+        rpcProvider
+      );
 
-    const populatedTx = await walletContract.populateTransaction.execute(
-      txRequest.to,
-      txRequest.value ?? '0',
-      txRequest.data ?? '0x'
-    );
+      console.log('tx.to', txRequest.to);
+      console.log('tx.datatx.data', txRequest.data);
 
-    console.log('populatedTx', populatedTx);
+      const populatedTx = await walletContract.populateTransaction.execute(
+        txRequest.to,
+        txRequest.value ?? '0',
+        txRequest.data ?? '0x'
+      );
 
-    txRequest.data = populatedTx.data ?? '0x';
-    txRequest.to = populatedTx.to;
+      console.log('populatedTx', populatedTx);
+
+      txRequest.data = populatedTx.data ?? '0x';
+      txRequest.to = populatedTx.to;
+    }
   }
 
   if (!txRequest.nonce) {
-    txRequest.nonce = await rpcProvider.getTransactionCount(senderAddress);
+    txRequest.nonce = await rpcProvider.getTransactionCount(
+      senderAddress,
+      'pending'
+    );
   }
 
   if (!txRequest.gasPrice) {
@@ -146,9 +158,9 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
   console.log('isSmartAccount', isSmartAccount);
   console.log('request.triggerPopup', request.triggerPopup);
 
-  if (request.triggerPopup) {
-    // TODO: pass flag to trigger/not-trigger popup menu
-    // to be able to use this bg handler for internal purposes
+  // TODO: pass flag to trigger/not-trigger popup menu
+  // to be able to use this bg handler for internal purposes
+  if (true /*request.triggerPopup*/) {
     const response =
       // TODO: return only updated gas fees
       await window.getResponse<SendTransactionRequestDTO>(
@@ -181,8 +193,8 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
   console.log('default tx', tx);
 
   const password = await getSessionPassword();
-  
-  if(!password) {
+
+  if (!password) {
     throw new Error('Wallet is locked');
   }
 
