@@ -152,9 +152,9 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
   console.log('isSmartAccount', isSmartAccount);
   console.log('request.triggerPopup', request.triggerPopup);
 
-  if (request.triggerPopup) {
-    // TODO: pass flag to trigger/not-trigger popup menu
-    // to be able to use this bg handler for internal purposes
+  // TODO: pass flag to trigger/not-trigger popup menu
+  // to be able to use this bg handler for internal purposes
+  if (true /*request.triggerPopup*/) {
     const response =
       // TODO: return only updated gas fees
       await window.getResponse<SendTransactionRequestDTO>(

@@ -18,13 +18,17 @@ import { getUserAddresses } from '../providers/background/methods/internal/getUs
 import { initializeWallet } from '../providers/background/methods/internal/initializeWallet';
 import { isWalletInitialized } from '../providers/background/methods/internal/isWalletInitialized';
 import { switchAccount } from '../providers/background/methods/internal/switchAccount';
-import { EthereumRequest } from '../providers/types';
+import {
+  EthereumRequest,
+  EthereumRequestOverrideParams,
+} from '../providers/types';
 import { makeRpcRequest } from '../requests/toRpcNode';
 import { walletRequestAccounts } from '../providers/background/methods/external/wallet_requestAccounts';
 import { passwordHash } from '../providers/background/methods/internal/passwordHash';
 import { getCurrentNetwork } from '../providers/background/methods/internal/getCurrentNetwork';
 import { switchNetwork } from '../providers/background/methods/internal/switchNetwork';
 import { getAllNetworks } from '../providers/background/methods/internal/getAllNetworks';
+import { ethSignTypedDataV4 } from '../providers/background/methods/external/eth_signTypedData_v4';
 
 export enum InternalBgMethods {
   IS_LOCKED = 'isLocked',
@@ -61,7 +65,7 @@ export const handleBackgroundMessage: BackgroundOnMessageCallback = async (
 
 const handleExternal: BackgroundOnMessageCallback<
   any,
-  EthereumRequest
+  EthereumRequestOverrideParams
 > = async (request, domain) => {
   if (!request.msg) throw getCustomError('Invalid payload');
 
@@ -79,6 +83,8 @@ const handleExternal: BackgroundOnMessageCallback<
     return ethSendTransaction(request, domain);
   } else if (request.msg.method === 'eth_sendRawTransaction') {
     return ethSendRawTransaction(request, domain);
+  } else if (request.msg.method === 'eth_signTypedData_v4') {
+    return ethSignTypedDataV4(request, domain);
   } else if (request.msg.method === 'eth_call') {
     return ethCall(request, domain);
   } else {

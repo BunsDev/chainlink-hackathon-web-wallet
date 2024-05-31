@@ -22,6 +22,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { EnterMnemonicPage } from './pages/enter-mnemonic-page';
 import { HomePage } from './pages/home-page';
 import { GenerateContractPage } from './pages/generate-contract-page';
+import SignTypedDataPage from './pages/sign-typed-data';
 
 function Popup() {
   const [queryClient] = useState(() => new QueryClient());
@@ -96,6 +97,10 @@ function Popup() {
               <Route
                 path={'/' + UIRoutes.ethSendTransaction.path}
                 element={<SendTransactionPage runtimeListen={true} />}
+              ></Route>
+              <Route
+                path={'/' + UIRoutes.ethSignTypedData.path}
+                element={<SignTypedDataPage runtimeListen={true} />}
               ></Route>
               <Route
                 path="/create-wallet"
