@@ -23,6 +23,7 @@ import { EnterMnemonicPage } from './pages/enter-mnemonic-page';
 import { HomePage } from './pages/home-page';
 import { GenerateContractPage } from './pages/generate-contract-page';
 import SignTypedDataPage from './pages/sign-typed-data';
+import { Toaster } from 'react-hot-toast';
 
 function Popup() {
   const [queryClient] = useState(() => new QueryClient());
@@ -112,6 +113,7 @@ function Popup() {
               ></Route>
               <Route path="/login-page" element={<LoginPage />}></Route>
             </Routes>
+            <Toaster />
           </div>
         </Context.Provider>
       )}

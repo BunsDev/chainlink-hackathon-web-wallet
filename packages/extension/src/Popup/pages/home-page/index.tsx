@@ -1,6 +1,7 @@
-import { ChevronDown, Menu } from 'lucide-react';
+import { Check, ChevronDown, Menu } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollArea } from '../../../components/scroll-area';
+import copyIcon from '../../../assets/img/icon_copy.svg';
 import { Button } from '../../../components/button';
 import {
   DropdownMenu,
@@ -23,6 +24,13 @@ import { getAddress } from 'ethers/lib/utils';
 import { useAllNetworks } from '../../hooks/read/use-all-networks';
 import { useSwitchNetwork } from '../../hooks/mutations/use-switch-network';
 import { shortenAddress } from '../../../lib/utils/address';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from '../../../components/dialog';
+import QRCode from 'react-qr-code';
+import toast from 'react-hot-toast';
 
 const Header = () => {
   const [networkOpened, setNetworkOpened] = useState(false);
@@ -290,11 +298,72 @@ const Main = () => {
 };
 
 const Buttons = () => {
+  const { data } = useUserAccounts();
+  const [copied, setCopied] = useState(false);
+  const value =
+    (data?.selectedAccount?.isSmartContract
+      ? data?.selectedAccount?.masterWallet
+      : data?.selectedAccount?.address) ?? '';
+
+  const onCopy = () => {
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    toast.success('Copied to clipboard');
+    setTimeout(() => {
+      setCopied(false);
+    }, 3000);
+  };
+
   return (
     <div className="flex items-center gap-[24px] mt-[54px] justify-center mb-[30px]">
-      <Button variant="outline" className="max-w-[170px] w-full">
-        Deposit
-      </Button>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="outline" className="max-w-[170px] w-full">
+            Deposit
+          </Button>
+        </DialogTrigger>
+        <DialogContent
+          onInteractOutside={(e) => {
+            e.preventDefault();
+          }}
+        >
+          <div className="flex flex-col gap-[16px] font-sans">
+            <div className="flex flex-col gap-[8px]">
+              <div className="text-[20px] leading-[32px] font-bold">
+                Deposit
+              </div>
+              <div className="text-[16px] leading-[24px] text-muted-foreground">
+                Scan QR code to proceed with deposit:
+              </div>
+            </div>
+            <div className="bg-background rounded-[13px] p-[16px] flex flex-col gap-[24px]">
+              <div className="flex flex-col gap-[4px]">
+                <div className="text-[12px] leading-[20px] font-medium">
+                  Address:
+                </div>
+                <div className="flex items-center gap-[8px]">
+                  <div className="text-[14px] leading-[22px] text-muted-foreground truncate">
+                    {shortenAddress(value, 7)}
+                  </div>
+                  {copied ? (
+                    <Check className="text-primary w-[18px] h-[18px]" />
+                  ) : (
+                    <img
+                      src={copyIcon}
+                      alt="copy"
+                      className="cursor-pointer"
+                      onClick={onCopy}
+                    />
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center justify-center">
+                <QRCode value={value} className="w-[156px] h-[156px]" />
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Button className="max-w-[170px] w-full">Transfer</Button>
     </div>
   );
