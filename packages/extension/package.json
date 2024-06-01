@@ -33,6 +33,7 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.2.0",
     "react-hot-loader": "^4.13.0",
+    "react-hot-toast": "^2.4.1",
     "react-qr-code": "^2.0.13",
     "react-router-dom": "^6.4.1",
     "tailwind-merge": "^2.3.0",
