@@ -32,7 +32,7 @@ export class Provider extends EventEmitter implements ProviderInterface {
     this.isUndas = true;
     this.isMetaMask = true;
     this.selectedAddress = null; //deprecated
-    this.connected = false;
+    this.connected = true;
     this.sendMessageHandler = options.sendMessageHandler;
   }
   async request(request: EthereumRequest): Promise<EthereumResponse> {

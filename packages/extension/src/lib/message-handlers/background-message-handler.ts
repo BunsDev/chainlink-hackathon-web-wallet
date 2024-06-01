@@ -33,6 +33,7 @@ import { ethEstimateGas } from '../providers/background/methods/external/eth_est
 import { convertTxToAutoExecute } from '../providers/background/methods/internal/convertTxToAutoExecute';
 import { getDeploySmartWalletContractTx } from '../providers/background/methods/internal/getDeploySmartWalletContractTx';
 import { importSmartWallet } from '../providers/background/methods/internal/importSmartWallet';
+import { walletImportSmartWallet } from '../providers/background/methods/external/wallet_importSmartWallet';
 
 export enum InternalBgMethods {
   IS_LOCKED = 'isLocked',
@@ -85,6 +86,8 @@ const handleExternal: BackgroundOnMessageCallback<
     return ethRequestAccounts(request, domain);
   } else if (request.msg.method === 'wallet_requestAccounts') {
     return walletRequestAccounts(request, domain);
+  } else if (request.msg.method === 'wallet_ImportSmartWallet') {
+    return walletImportSmartWallet(request, domain);
   } else if (request.msg.method === 'eth_sendTransaction') {
     return ethSendTransaction(request, domain);
   } else if (request.msg.method === 'eth_sendRawTransaction') {

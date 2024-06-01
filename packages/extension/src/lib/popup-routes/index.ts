@@ -28,6 +28,11 @@ export const UIRoutes = {
     name: 'ethSendTransaction',
     component: {},
   },
+  walletImportSmartWallet: {
+    path: 'wallet-import-smart-wallet',
+    name: 'walletImportSmartWallet',
+    component: {},
+  },
   ethSignTypedData: {
     path: 'eth-sign-typedData',
     name: 'ethSignTypedData',
