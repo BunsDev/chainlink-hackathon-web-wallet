@@ -41,7 +41,7 @@ export const importSmartWallet: BackgroundOnMessageCallback<
       boolean,
       EthereumRequest<ImportSmartWalletPayloadDTO>
     >(
-      getPopupPath(UIRoutes.ethSendTransaction.path),
+      getPopupPath(UIRoutes.walletImportSmartWallet.path),
       {
         method: request.msg!.method,
         params: request.msg?.params!,
