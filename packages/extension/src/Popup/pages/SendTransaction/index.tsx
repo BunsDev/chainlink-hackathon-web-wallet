@@ -26,6 +26,7 @@ import { Button } from '../../../components/button';
 import { SendTransactionRequestDTO } from '../../../lib/providers/background/methods/external/eth_sendTransaction';
 import payment from '../../../assets/img/icon_payment.svg';
 import calendar from '../../../assets/img/icon_calendar.svg';
+import arrowRightCircle from '../../../assets/img/icon_arrow_right_circle.svg';
 import {
   Dialog,
   DialogContent,
@@ -44,6 +45,8 @@ import { Calendar } from '../../../components/calendar';
 import { Input } from '../../../components/input';
 import { useUserAccounts } from '../../hooks/read/use-user-accounts';
 import { useConvertTxToAutoExecute } from '../../hooks/mutations/use-convert-tx-to-auto-execute';
+import { shortenAddress } from '../../../lib/utils/address';
+import { useCurrentNetwork } from '../../hooks/read/use-current-network';
 
 enum Tab {
   Details = 'Details',
@@ -69,13 +72,16 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
   const [autoOpened, setAutoOpened] = useState<boolean>(false);
   const { data } = useUserAccounts();
   const { mutateAsync: convertTxToAutoExecute } = useConvertTxToAutoExecute();
+  const { data: currentNetwork } = useCurrentNetwork();
+  const connectedAddress = (data?.connectedAccount ?? data?.selectedAccount)
+    ?.address;
 
   const onSaveAutoPaymentClick = useCallback(async () => {
     if (!originalTx) return;
 
     if (!date) {
       setTxToSign(originalTx);
-      setAutoOpened(false); 
+      setAutoOpened(false);
       return;
     }
 
@@ -153,37 +159,44 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
       <div className="text-[24px] leading-[32px] font-bold">
         Confirm transaction
       </div>
-      <div className="mt-[24px] bg-white rounded-[16px] py-[8px] px-[17px] flex items-center justify-between">
-        <div className="text-[16px] leading-[24px] font-medium">
-          {(data?.connectedAccount ?? data?.selectedAccount)?.name}
+      <div className="mt-[24px] bg-white rounded-[12px] p-[16px] flex flex-col gap-[16px]">
+        <div className="flex items-center rounded-[9px] p-[8px] gap-[24px] bg-background text-foreground justify-between">
+          <div className="flex flex-col gap-[2px]">
+            <div className="text-[12px] font-medium leading-[20px] opacity-80">
+              From:
+            </div>
+            <div className="text-[12px] leading-[20px] text-muted-foreground">
+              {connectedAddress ? shortenAddress(connectedAddress, 5) : ''}
+            </div>
+          </div>
+          <img src={arrowRightCircle} alt="arrowRightCircle" />
+          <div className="flex flex-col gap-[2px]">
+            <div className="text-[12px] font-medium leading-[20px] opacity-80">
+              To:
+            </div>
+            <div className="text-[12px] leading-[20px] text-muted-foreground">
+              {txToSign?.to ? shortenAddress(txToSign?.to, 5) : ''}
+            </div>
+          </div>
         </div>
-        <img src="/assets/icon_arrow_right.svg" alt="icon_arrow_right" />
-        <div className="text-[16px] leading-[24px] font-medium">
-          {txToSign?.isContractWalletDeployment
-            ? 'Wallet deployment'
-            : 'Contract interaction'}
-        </div>
-      </div>
-      <div className="mt-[24px] flex justify-between">
         <div className="flex flex-col gap-[8px]">
-          <div className="text-[14px] leading-[24px] text-muted-foreground">
-            Value
+          <div className="flex items-center justify-between">
+            <div className="text-[12px] leading-[20px] text-muted-foreground opacity-80 font-medium">
+              Value
+            </div>
+            <div className="text-[16px] font-medium leading-[24px]">
+              {parseFloat(
+                formatUnits(BigNumber.from(txToSign?.value ?? 0))
+              ).toFixed(4)}{' '}
+              {currentNetwork?.nativeSymbol}
+            </div>
           </div>
-          <div className="text-[40px] leading-[32px]">
-            {formatUnits(tx?.value ?? '0')}
-          </div>
-        </div>
-        <div
-          className={cn(
-            'flex flex-col gap-[8px]',
-            !tx?.isContractWalletDeployment && 'hidden'
-          )}
-        >
-          <div className="text-[14px] leading-[24px] text-muted-foreground">
-            Contract deployment:
-          </div>
-          <div className="text-[14px] leading-[24px]">
-            https://wlfkjfksjf.com
+          <div className="flex items-center justify-between">
+            <div className="text-[12px] leading-[20px] text-muted-foreground opacity-80 font-medium">
+              {txToSign?.isContractWalletDeployment
+                ? 'Wallet deployment'
+                : 'Contract interaction'}
+            </div>
           </div>
         </div>
       </div>
@@ -211,7 +224,7 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
                 Data
               </div>
             </div>
-            <img src="/assets/icon_edit.svg" alt="icon_edit" />
+            {/* <img src="/assets/icon_edit.svg" alt="icon_edit" /> */}
           </div>
           {tab === Tab.Details ? (
             <div className="mt-[16px] grid grid-cols-[auto_1fr] gap-[8px]">
@@ -225,35 +238,42 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
                 Gas Price:
               </div>
               <div className="font-medium text-[16px] leading-[24px]">
-                {formatUnits(BigNumber.from(txToSign?.gasPrice ?? 0))} ETH
+                {parseFloat(
+                  formatUnits(BigNumber.from(txToSign?.gasPrice ?? 0), 'gwei')
+                ).toFixed(6)}{' '}
+                gwei
               </div>
               <div className="text-[14px] leading-[24px] text-muted-foreground">
                 Total Gas:
               </div>
               <div className="font-medium text-[16px] leading-[24px]">
-                {formatUnits(
-                  BigNumber.from(txToSign?.gasLimit ?? 0).mul(
-                    BigNumber.from(txToSign?.gasPrice ?? 0)
+                {parseFloat(
+                  formatUnits(
+                    BigNumber.from(txToSign?.gasLimit ?? 0).mul(
+                      BigNumber.from(txToSign?.gasPrice ?? 0)
+                    )
                   )
-                )}{' '}
-                ETH
+                ).toFixed(6)}{' '}
+                {currentNetwork?.nativeSymbol}
               </div>
               <div className="text-[14px] leading-[24px] text-muted-foreground">
                 Total Cost:
               </div>
               <div className="font-medium text-[16px] leading-[24px]">
-                {formatUnits(
-                  BigNumber.from(txToSign?.gasLimit ?? 0)
-                    .mul(BigNumber.from(txToSign?.gasPrice ?? 0))
-                    .add(BigNumber.from(txToSign?.value ?? 0))
-                )}{' '}
-                ETH
+                {parseFloat(
+                  formatUnits(
+                    BigNumber.from(txToSign?.gasLimit ?? 0)
+                      .mul(BigNumber.from(txToSign?.gasPrice ?? 0))
+                      .add(BigNumber.from(txToSign?.value ?? 0))
+                  )
+                ).toFixed(6)}{' '}
+                {currentNetwork?.nativeSymbol}
               </div>
               <div className="text-[14px] leading-[24px] text-muted-foreground">
                 Chain:
               </div>
               <div className="font-medium text-[16px] leading-[24px]">
-                {txToSign?.chainId}
+                {currentNetwork?.name}
               </div>
               <div className="text-[14px] leading-[24px] text-muted-foreground">
                 Nonce:

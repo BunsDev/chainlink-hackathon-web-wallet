@@ -147,6 +147,7 @@ const SubHeader = () => {
   const { data } = useUserAccounts();
   const [popoverOpened, setPopoverOpened] = useState(false);
   const [masterCopied, setMasterCopied] = useState(false);
+  const [scCopied, setScCopied] = useState(false);
   const [smartWalletSelectOpened, setSmartWalletSelectOpened] = useState(false);
   const { mutateAsync: switchWallet } = useSwitchWallet();
   const { mutateAsync: importSmartWallet } = useImportSmartWallet();
@@ -179,7 +180,7 @@ const SubHeader = () => {
         await switchWallet({ switchTo: id });
       }
     },
-    [data]
+    [data, importSmartWallet, switchWallet]
   );
 
   const onMasterCopy = () => {
@@ -192,6 +193,19 @@ const SubHeader = () => {
     toast.success('Copied to clipboard');
     setTimeout(() => {
       setMasterCopied(false);
+    }, 3000);
+  };
+
+  const onScCopy = () => {
+    navigator.clipboard.writeText(
+      data?.selectedAccount?.isSmartContract
+        ? data?.selectedAccount.address
+        : '-'
+    );
+    setScCopied(true);
+    toast.success('Copied to clipboard');
+    setTimeout(() => {
+      setScCopied(false);
     }, 3000);
   };
 
@@ -265,24 +279,45 @@ const SubHeader = () => {
               open={smartWalletSelectOpened}
               onOpenChange={setSmartWalletSelectOpened}
             >
-              <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-[8px] cursor-pointer">
-                  <div>
-                    {data?.selectedAccount?.isSmartContract
-                      ? shortenAddress(data?.selectedAccount.address)
-                      : '-'}
-                  </div>
-                  <div>
-                    <ChevronDown
-                      size={16}
-                      className={cn(
-                        'transition-all',
-                        smartWalletSelectOpened && 'rotate-180'
-                      )}
-                    />
-                  </div>
+              <div className="flex flex-col gap-[2px]">
+                <div className="text-[12px] leading-[20px] font-medium opacity-80 text-right">
+                  Smart Contract:
                 </div>
-              </DropdownMenuTrigger>
+                <DropdownMenuTrigger asChild>
+                  <div className="flex items-center justify-end gap-[8px] cursor-pointer">
+                    <div>
+                      {data?.selectedAccount?.isSmartContract
+                        ? shortenAddress(data?.selectedAccount.address)
+                        : '-'}
+                    </div>
+                    {data?.selectedAccount?.isSmartContract ? (
+                      scCopied ? (
+                        <Check size={18} className="text-primary" />
+                      ) : (
+                        <img
+                          src={copyIcon}
+                          alt="copy"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            onScCopy();
+                          }}
+                          className="cursor-pointer"
+                        />
+                      )
+                    ) : null}
+                    <div>
+                      <ChevronDown
+                        size={16}
+                        className={cn(
+                          'transition-all',
+                          smartWalletSelectOpened && 'rotate-180'
+                        )}
+                      />
+                    </div>
+                  </div>
+                </DropdownMenuTrigger>
+              </div>
+
               <DropdownMenuContent>
                 <DropdownMenuItem
                   id={'no-smart-wallet'}
@@ -552,10 +587,7 @@ const Deposit = ({ value }: DepositProps) => {
 const Buttons = () => {
   const { data } = useUserAccounts();
 
-  const value =
-    (data?.selectedAccount?.isSmartContract
-      ? data?.selectedAccount?.masterWallet
-      : data?.selectedAccount?.address) ?? '';
+  const value = data?.selectedAccount?.address ?? '';
 
   return (
     <div className="flex items-center gap-[24px] mt-[54px] justify-center mb-[30px]">

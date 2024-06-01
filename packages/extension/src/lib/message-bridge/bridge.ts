@@ -263,8 +263,8 @@ class WindowPromise {
       url: loadingPath,
       type: 'panel',
       focused: true,
-      height: 700,
-      width: 500,
+      height: 750,
+      width: 550,
       top: 0,
     });
 
