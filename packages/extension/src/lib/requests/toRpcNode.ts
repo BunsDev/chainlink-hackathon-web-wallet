@@ -8,6 +8,8 @@ import {
 import { EthereumRequest, JsonRpcRequest } from '../providers/types';
 import Storage, { StorageNamespaces } from '../storage';
 
+import eth from '../../assets/img/network_eth.svg';
+
 export const makeRpcRequest: BackgroundOnMessageCallback<
   unknown,
   EthereumRequest
@@ -54,6 +56,7 @@ export const getSupportedNetworks = () => {
       name: 'Sepolia',
       nativeName: 'Sepolia Ether',
       nativeSymbol: 'SEP ETH',
+      image: eth,
     },
     {
       jsonRpcUrl:
@@ -63,6 +66,7 @@ export const getSupportedNetworks = () => {
       name: 'Ethereum',
       nativeName: 'Ether',
       nativeSymbol: 'ETH',
+      image: eth,
     },
   ];
   return networkConfig.map((v) => ({

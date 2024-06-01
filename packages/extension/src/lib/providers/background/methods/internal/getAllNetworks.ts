@@ -35,6 +35,7 @@ export const getAllNetworks: BackgroundOnMessageCallback<
     name: network.name,
     nativeName: network.nativeName,
     nativeSymbol: network.nativeSymbol,
+    image: network.image,
     isActive: network.name === selectedNetwork.name,
   }));
 };

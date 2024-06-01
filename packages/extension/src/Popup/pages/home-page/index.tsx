@@ -1,8 +1,8 @@
-import { Check, ChevronDown, Loader2, Menu } from 'lucide-react';
+import { Check, ChevronDown, Copy, Loader2, Menu } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollArea } from '../../../components/scroll-area';
 import copyIcon from '../../../assets/img/icon_copy.svg';
-import { Button } from '../../../components/button';
+import { Button, buttonVariants } from '../../../components/button';
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -53,65 +53,84 @@ const Header = () => {
         return;
       }
 
-      await switchNetwork({ switchTo: id });
+      try {
+        await switchNetwork({ switchTo: id });
+      } catch (e) {
+        toast.error('Failed to switch network. Try again later.');
+        console.error(e);
+      }
     },
-    [data]
+    [networksData, switchNetwork]
   );
 
   const onConnectClicked = useCallback(async () => {
     if (data?.selectedAccount?.isConnected) {
       await disconnectWallet(data?.selectedAccount?.address);
     }
-  }, [data]);
+  }, [data, disconnectWallet]);
 
   return (
-    <div className="py-[18px] bg-white px-[24px] items-center justify-between shadow-sm flex">
+    <div className="py-[8px] bg-white px-[24px] items-center justify-between shadow-sm flex">
       <div className="flex items-center gap-[16px]" onClick={onConnectClicked}>
-        <img src="/assets/main_logo_small.svg" alt="logo" />
         {data?.selectedAccount?.isConnected ? (
           <div className="flex items-center gap-[4px] cursor-pointer">
             <div className="bg-success rounded-full w-[8px] h-[8px]" />
-            <div className="text-[12px] leading-[20px] text-success">
-              Connected
-            </div>
           </div>
         ) : (
           <div className="flex items-center gap-[4px]">
             <div className="bg-error rounded-full w-[8px] h-[8px]" />
-            <div className="text-[12px] leading-[20px] text-error">
-              Not Connected
-            </div>
           </div>
         )}
+        {/* <img src="/assets/main_logo_small.svg" alt="logo" /> */}
+        <div className="text-[16px] font-medium leading-[24px]">
+          ProxyWallet
+        </div>
       </div>
       <div className="flex items-center gap-[24px] text-primary">
-        <DropdownMenu open={networkOpened} onOpenChange={setNetworkOpened}>
-          <DropdownMenuTrigger asChild>
-            <div className="flex items-center gap-[8px] cursor-pointer">
-              <div>{currentNetwork?.name}</div>
-              <div>
-                <ChevronDown
-                  size={16}
-                  className={cn(
-                    'transition-all',
-                    networkOpened && 'rotate-180'
-                  )}
+        <Dialog open={networkOpened} onOpenChange={setNetworkOpened}>
+          <DialogTrigger asChild>
+            <div className="flex border px-[16px] py-[8px] border-primary text-primary rounded-[12px] items-center hover:bg-accent transition-all cursor-pointer">
+              {currentNetwork?.image && (
+                <img
+                  src={currentNetwork?.image}
+                  alt="network"
+                  className="w-[18px] h-[18px]"
                 />
+              )}
+              <div className="text-[12px] leading-[20px]">
+                {currentNetwork?.name}
               </div>
             </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {networksData?.allNetworks?.map((s) => (
-              <DropdownMenuItem
-                key={s.name}
-                id={s.name}
-                onClick={onNetworkItemClick}
-              >
-                {s.name}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </DialogTrigger>
+          <DialogContent>
+            <div className="flex flex-col gap-[24px]">
+              <div className="text-[16px] leading-[24px] font-medium">
+                Networks
+              </div>
+              <div className="grid grid-cols-2 gap-[16px]">
+                {networksData?.allNetworks?.map((s) => (
+                  <div
+                    key={s.name}
+                    id={s.name}
+                    className={cn(
+                      'cursor-pointer w-full py-[8px] px-[16px] flex items-center gap-[8px] bg-background rounded-[12px] text-[14px] leading-[22px] text-foreground hover:bg-[#546FFF] hover:text-white transition-all',
+                      currentNetwork?.chainId === s.chainId &&
+                        'bg-primary text-white'
+                    )}
+                    onClick={onNetworkItemClick}
+                  >
+                    <img
+                      src={s.image}
+                      alt="network"
+                      className="w-[32px] h-[32px]"
+                    />
+                    {s.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
         <Menu size={16} className="cursor-pointer" />
       </div>
     </div>
@@ -121,6 +140,7 @@ const Header = () => {
 const SubHeader = () => {
   const { data } = useUserAccounts();
   const [popoverOpened, setPopoverOpened] = useState(false);
+  const [masterCopied, setMasterCopied] = useState(false);
   const [smartWalletSelectOpened, setSmartWalletSelectOpened] = useState(false);
   const { mutateAsync: switchWallet } = useSwitchWallet();
   const { mutateAsync: importSmartWallet } = useImportSmartWallet();
@@ -156,19 +176,44 @@ const SubHeader = () => {
     [data]
   );
 
+  const onMasterCopy = () => {
+    navigator.clipboard.writeText(
+      data?.selectedAccount?.isSmartContract
+        ? data?.selectedAccount?.masterWallet!
+        : data?.selectedAccount?.address!
+    );
+    setMasterCopied(true);
+    toast.success('Copied to clipboard');
+    setTimeout(() => {
+      setMasterCopied(false);
+    }, 3000);
+  };
+
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center justify-between px-[24px] pt-[24px] pb-[16px] border-b-[1px] border-[#1C1F5A] border-opacity-[0.08]">
-      <div className="flex gap-[8px]">
-        <div className="text-[12px] leading-[20px] font-medium">
+    <div className="flex items-center justify-between px-[24px] pt-[16px] pb-[6px] border-b-[1px] border-[#1C1F5A] border-opacity-[0.08]">
+      <div className="flex flex-col gap-[2px]">
+        <div className="text-[12px] leading-[20px] font-medium opacity-80">
           Master account:
         </div>
-        <div className="text-[12px] leading-[20px] text-muted-foreground">
-          {shortenAddress(
-            data?.selectedAccount?.isSmartContract
-              ? data?.selectedAccount?.masterWallet!
-              : data?.selectedAccount?.address!
+        <div className="flex items-center gap-[8px]">
+          <div className="text-[12px] leading-[20px] text-muted-foreground">
+            {shortenAddress(
+              data?.selectedAccount?.isSmartContract
+                ? data?.selectedAccount?.masterWallet!
+                : data?.selectedAccount?.address!
+            )}
+          </div>
+          {masterCopied ? (
+            <Check size={18} className="text-primary" />
+          ) : (
+            <img
+              src={copyIcon}
+              alt="copy"
+              onClick={onMasterCopy}
+              className="cursor-pointer"
+            />
           )}
         </div>
       </div>
@@ -176,12 +221,12 @@ const SubHeader = () => {
         {data?.selectedAccountSmartWallets?.length === 0 ? (
           <Popover open={popoverOpened} onOpenChange={setPopoverOpened}>
             <PopoverTrigger asChild>
-              <div className="flex items-center gap-[4px] cursor-pointer">
-                <div className="bg-error rounded-full w-[8px] h-[8px]" />
-                <div className="text-[12px] leading-[20px] text-error">
-                  Not deployed
-                </div>
-              </div>
+              <Button
+                variant="secondary"
+                className="py-[8px] px-[16px] rounded-[12px] text-[12px] leading-[20px] text-primary"
+              >
+                Generate Smart Contract
+              </Button>
             </PopoverTrigger>
             <PopoverContent className="rounded-[4px] py-[8px] px-[16px] flex flex-col gap-[16px] border-none max-w-[290px] w-full ml-[40px]">
               <div className="flex gap-[8px]">
@@ -271,13 +316,16 @@ const Balance = () => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-[16px] mt-[24px]">
-      <img src="/assets/icon_ethereum.svg" alt="ethereum" />
-      <div className="text-[32px] leading-[40px] font-medium">
-        {formatBalance(data?.selectedAccount?.balanceNative)}{' '}
-        {currentNetwork?.nativeSymbol}
+    <div className="flex flex-col items-center gap-[8px] mt-[34px]">
+      <div className="flex items-center gap-[8px] justify-center">
+        <img src="/assets/icon_ethereum.svg" alt="ethereum" />
+        <div className="text-[24px] leading-[32px] font-bold">
+          {formatBalance(data?.selectedAccount?.balanceNative)}{' '}
+          {currentNetwork?.nativeSymbol}
+        </div>
       </div>
-      <div className="text-[16px] leading-[24px] text-muted-foreground">
+
+      <div className="text-[14px] leading-[22px] text-muted-foreground">
         $206.00
       </div>
     </div>
@@ -303,23 +351,23 @@ const Main = () => {
         icon: '/assets/account_transfer.svg',
         onClick: () => {},
       },
-      {
-        title: 'Transaction automation',
-        icon: '/assets/transaction_automation.svg',
-        onClick: () => {},
-      },
+      // {
+      //   title: 'Transaction automation',
+      //   icon: '/assets/transaction_automation.svg',
+      //   onClick: () => {},
+      // },
     ];
   }, []);
 
   return (
-    <div className="grid grid-cols-2 gap-y-[24px] px-[24px] self-center mt-[48px] justify-items-center">
+    <div className="grid grid-cols-2 gap-[8px] px-[24px] self-center mt-[40px] justify-items-center">
       {items.map(({ title, icon, onClick }) => (
         <div
           key={title}
-          className="p-[16px] flex flex-col gap-[16px] items-center bg-white w-[170px] h-[176px] cursor-pointer"
+          className="p-[16px] flex flex-col gap-[8px] items-center bg-white w-[192px] h-[110px] cursor-pointer hover:bg-[#546FFF] rounded-[8px] transition-all hover:text-white"
           onClick={onClick}
         >
-          <div className="text-[16px] leading-[24px] font-medium text-center">
+          <div className="text-[14px] leading-[22px] font-medium text-center">
             {title}
           </div>
           <img src={icon} alt={title} />
