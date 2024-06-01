@@ -1,17 +1,17 @@
-import EventEmitter from "eventemitter3";
-import { handleIncomingMessage } from "../message-handlers/injected-provider-message-handler";
+import EventEmitter from 'eventemitter3';
+import { handleIncomingMessage } from '../message-handlers/injected-provider-message-handler';
 
 import {
   EthereumRequest,
   EthereumResponse,
   JsonRpcRequest,
   JsonRpcResponse,
-} from "./types";
+} from './types';
 import {
   ProviderOptions,
   ProviderInterface,
   SendMessageHandler,
-} from "./types";
+} from './types';
 
 export class Provider extends EventEmitter implements ProviderInterface {
   chainId: string | null;
@@ -28,19 +28,19 @@ export class Provider extends EventEmitter implements ProviderInterface {
   constructor(options: ProviderOptions) {
     super();
     this.chainId = null; //deprecated
-    this.networkVersion = "0x1"; //deprecated
+    this.networkVersion = '0x1'; //deprecated
     this.isUndas = true;
     this.isMetaMask = true;
     this.selectedAddress = null; //deprecated
-    this.connected = true;
+    this.connected = false;
     this.sendMessageHandler = options.sendMessageHandler;
   }
   async request(request: EthereumRequest): Promise<EthereumResponse> {
     if (this.chainId === null) {
       await this.sendMessageHandler(
         JSON.stringify({
-          method: "eth_chainId",
-          params: []
+          method: 'eth_chainId',
+          params: [],
         })
       ).then((res) => {
         this.chainId = res;
@@ -49,21 +49,20 @@ export class Provider extends EventEmitter implements ProviderInterface {
     }
     if (
       this.selectedAddress === null &&
-      request.method === "eth_requestAccounts"
+      request.method === 'eth_requestAccounts'
     ) {
-      return this.sendMessageHandler(JSON.stringify(request)).then(
-        (res) => {
-          this.selectedAddress = res[0];
-          return res;
-        }
-      );
+      return this.sendMessageHandler(JSON.stringify(request)).then((res) => {
+        this.selectedAddress = res[0];
+        this.connected = true;
+        return res;
+      });
     }
     return this.sendMessageHandler(JSON.stringify(request));
   }
   enable(): Promise<any> {
     console.log('enable', this.connected);
 
-    return this.request({ method: "eth_requestAccounts" });
+    return this.request({ method: 'eth_requestAccounts' });
   }
   isConnected(): boolean {
     console.log('is connected', this.connected);
@@ -83,7 +82,7 @@ export class Provider extends EventEmitter implements ProviderInterface {
       .then((res) => {
         callback(null, {
           id: data.id,
-          jsonrpc: "2.0",
+          jsonrpc: '2.0',
           result: res,
         });
       })
@@ -96,8 +95,8 @@ export class Provider extends EventEmitter implements ProviderInterface {
 }
 
 class ProviderProxyHandler implements ProxyHandler<Provider> {
-  private readonly proxymethods = ["request", "sendAsync", "send"];
-  private readonly writableVars = ["autoRefreshOnNetworkChange"];
+  private readonly proxymethods = ['request', 'sendAsync', 'send'];
+  private readonly writableVars = ['autoRefreshOnNetworkChange'];
   ownKeys(target: Provider) {
     return Object.keys(target).concat(this.proxymethods);
   }
@@ -114,7 +113,7 @@ class ProviderProxyHandler implements ProxyHandler<Provider> {
     };
   }
   get(target: Provider, prop: keyof Provider) {
-    if (typeof target[prop] === "function") {
+    if (typeof target[prop] === 'function') {
       return (target[prop] as () => any).bind(target);
     }
     return target[prop];
@@ -122,7 +121,7 @@ class ProviderProxyHandler implements ProxyHandler<Provider> {
   has(target: Provider, name: keyof Provider) {
     return this.ownKeys(target).includes(name);
   }
-};
+}
 
 const injectDocument = (
   window: Record<string, any>,

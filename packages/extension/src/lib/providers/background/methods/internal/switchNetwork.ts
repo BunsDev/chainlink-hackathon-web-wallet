@@ -11,7 +11,10 @@ import Storage, { StorageNamespaces } from '../../../../storage';
 import { getBaseUrl } from '../../../../utils/url';
 import { EthereumRequest, MessageMethod } from '../../../types';
 import { UserAccount, UserSelectedAccount } from './initializeWallet';
-import { sendAccountChangedToTab } from '../../helpers';
+import {
+  sendAccountChangedToTab,
+  sendNetworkChangedToTab,
+} from '../../helpers';
 import { getCurrentNetwork, getNetwork } from '../../../../requests/toRpcNode';
 
 export type SwitchNetworkRequestPayloadDTO = {
@@ -31,6 +34,7 @@ export const switchNetwork: BackgroundOnMessageCallback<
   const storageCommon = new Storage(StorageNamespaces.COMMON);
 
   const network = await getCurrentNetwork();
+  const storageDomains = new Storage(StorageNamespaces.CONNECTED_DOMAINS);
 
   if (switchToNetwork.switchTo === network.name) {
     throw new Error('Same network');
@@ -41,4 +45,12 @@ export const switchNetwork: BackgroundOnMessageCallback<
     throw new Error('Unknown network');
   }
   await storageCommon.set('selectedNetwork', newNetwork.name);
+
+  await Promise.all(
+    (
+      await storageDomains.getAllKeys()
+    ).map(async (domain) => {
+      await sendNetworkChangedToTab(domain, newNetwork.chainId);
+    })
+  );
 };

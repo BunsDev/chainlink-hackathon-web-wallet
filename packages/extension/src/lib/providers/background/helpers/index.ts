@@ -13,7 +13,7 @@ import {
 
 export const sendAccountChangedToTab = async (
   tabDomain: string,
-  switchTo: string | undefined
+  switchTo: string | undefined | null
 ) => {
   const tabs = ((await Browser.tabs.query({})) ?? []).filter(
     (v) => getBaseUrl(v.url ?? '') === tabDomain
@@ -22,14 +22,42 @@ export const sendAccountChangedToTab = async (
   tabs.forEach((tab) => {
     if (!tab || !tab.id) return;
 
-    sendMessageToTab<EthereumRequest<string | undefined>>(
+    console.log({ switchTo });
+    let req = !!switchTo
+      ? {
+          method: MessageMethod.changeAddress,
+          params: [switchTo],
+        }
+      : {
+          method: MessageMethod.changeConnected,
+          params: [false, 4900],
+        };
+
+    sendMessageToTab<EthereumRequest>(
       tab.id,
       PostMessageDestination.WINDOW,
-      {
-        method: MessageMethod.changeAddress,
-        params: [switchTo],
-      }
+      req
     );
+  });
+};
+
+export const sendNetworkChangedToTab = async (
+  tabDomain: string,
+  switchToNetworkChainId: number
+) => {
+  const tabs = ((await Browser.tabs.query({})) ?? []).filter(
+    (v) => getBaseUrl(v.url ?? '') === tabDomain
+  );
+
+  tabs.forEach((tab) => {
+    if (!tab || !tab.id) return;
+
+    console.log({ switchToNetworkChainId });
+
+    sendMessageToTab<EthereumRequest>(tab.id, PostMessageDestination.WINDOW, {
+      method: MessageMethod.changeChainId,
+      params: [switchToNetworkChainId.toString(16)],
+    });
   });
 };
 

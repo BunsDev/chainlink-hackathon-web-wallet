@@ -32,12 +32,17 @@ export const disconnectAccount: BackgroundOnMessageCallback<
   const [accountToDisconnect] = req.msg!.params!;
 
   const storageDomains = new Storage(StorageNamespaces.CONNECTED_DOMAINS);
+  const accountsDomains = new Storage(StorageNamespaces.USER_WALLETS);
+
+  const accounts = accountsDomains.get<UserAccount[]>('accounts');
+  const selectedWallet = accountsDomains.get<UserAccount[]>('accounts');
+  const connectedDomains = await storageDomains.getAllKeys();
 
   if (!domain) {
     throw getCustomError('Invalid sender origin');
   }
 
-  let connectedAddresses = await storageDomains.get<string[]>(domain);
+  let connectedAddresses = (await storageDomains.get<string[]>(domain) ?? []).map(getAddress);;
 
   const addressArrayIndex = connectedAddresses
     ?.map(getAddress)
@@ -49,4 +54,8 @@ export const disconnectAccount: BackgroundOnMessageCallback<
   connectedAddresses?.splice(addressArrayIndex, 1);
 
   await storageDomains.set(domain, connectedAddresses);
+
+  const switchedTo = connectedAddresses?.[0];
+
+  sendAccountChangedToTab(domain, switchedTo);
 };

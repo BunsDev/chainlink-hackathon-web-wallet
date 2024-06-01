@@ -36,6 +36,7 @@ import { useDisconnectWallet } from '../../hooks/mutations/use-disconnect-wallet
 import Browser from 'webextension-polyfill';
 import { Input } from '../../../components/input';
 import { useTransfer } from '../../hooks/mutations/use-transfer';
+import { useConnectWallet } from '../../hooks/mutations/use-connect-wallet';
 
 const Header = () => {
   const [networkOpened, setNetworkOpened] = useState(false);
@@ -44,6 +45,7 @@ const Header = () => {
   const { data: networksData } = useAllNetworks();
   const { mutateAsync: switchNetwork } = useSwitchNetwork();
   const { mutateAsync: disconnectWallet } = useDisconnectWallet();
+  const { mutateAsync: connectWallet } = useConnectWallet();
 
   const onNetworkItemClick = useCallback(
     async (i: any) => {
@@ -64,8 +66,12 @@ const Header = () => {
   );
 
   const onConnectClicked = useCallback(async () => {
-    if (data?.selectedAccount?.isConnected) {
-      await disconnectWallet(data?.selectedAccount?.address);
+    if (!data?.selectedAccount) return;
+
+    if (data.selectedAccount.isConnected) {
+      await disconnectWallet(data.selectedAccount.address);
+    } else {
+      await connectWallet(data.selectedAccount.address);
     }
   }, [data, disconnectWallet]);
 

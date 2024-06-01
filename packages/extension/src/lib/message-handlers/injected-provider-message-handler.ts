@@ -29,6 +29,7 @@ const handleIncomingMessage: HandleIncomingMessageFunction = (
 
         if (jsonMsg.method === MessageMethod.changeConnected) {
             const isConnected = jsonMsg.params[0] as boolean;
+            console.log('CHANGE CONNECTED', isConnected);
             _provider.connected = isConnected;
             if (isConnected) {
                 const connectionInfo: ProviderConnectInfo = {
