@@ -47,6 +47,7 @@ import { useUserAccounts } from '../../hooks/read/use-user-accounts';
 import { useConvertTxToAutoExecute } from '../../hooks/mutations/use-convert-tx-to-auto-execute';
 import { shortenAddress } from '../../../lib/utils/address';
 import { useCurrentNetwork } from '../../hooks/read/use-current-network';
+import { usePrice } from '../../hooks/read/use-price';
 
 enum Tab {
   Details = 'Details',
@@ -75,6 +76,7 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
   const { data: currentNetwork } = useCurrentNetwork();
   const connectedAddress = (data?.connectedAccount ?? data?.selectedAccount)
     ?.address;
+  const { data: prices } = usePrice();
 
   const onSaveAutoPaymentClick = useCallback(async () => {
     if (!originalTx) return;
@@ -254,7 +256,20 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
                     )
                   )
                 ).toFixed(6)}{' '}
-                {currentNetwork?.nativeSymbol}
+                {currentNetwork?.nativeSymbol}{' '}
+                <span className="text-[14px] leading-[24px] text-muted-foreground font-normal">
+                  ($
+                  {(
+                    parseFloat(
+                      formatUnits(
+                        BigNumber.from(txToSign?.gasLimit ?? 0).mul(
+                          BigNumber.from(txToSign?.gasPrice ?? 0)
+                        )
+                      )
+                    ) * (prices?.[currentNetwork?.coingeckoId ?? ''] ?? 0)
+                  ).toFixed(2)}
+                  )
+                </span>
               </div>
               <div className="text-[14px] leading-[24px] text-muted-foreground">
                 Total Cost:
@@ -267,7 +282,20 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
                       .add(BigNumber.from(txToSign?.value ?? 0))
                   )
                 ).toFixed(6)}{' '}
-                {currentNetwork?.nativeSymbol}
+                {currentNetwork?.nativeSymbol}{' '}
+                <span className="text-[14px] leading-[24px] text-muted-foreground font-normal">
+                  ($
+                  {(
+                    parseFloat(
+                      formatUnits(
+                        BigNumber.from(txToSign?.gasLimit ?? 0)
+                          .mul(BigNumber.from(txToSign?.gasPrice ?? 0))
+                          .add(BigNumber.from(txToSign?.value ?? 0))
+                      )
+                    ) * (prices?.[currentNetwork?.coingeckoId ?? ''] ?? 0)
+                  ).toFixed(2)}
+                  )
+                </span>
               </div>
               <div className="text-[14px] leading-[24px] text-muted-foreground">
                 Chain:
@@ -298,96 +326,99 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
               {txToSign?.data?.toString()}
             </div>
           )}
-          <Dialog
-            open={autoOpened}
-            onOpenChange={(v) => {
-              if (!v) {
-                setDate(undefined);
-                setTime(undefined);
-              }
-              setAutoOpened(v);
-            }}
-          >
-            {!txToSign?.isContractWalletDeployment && (
-              <DialogTrigger asChild>
-                <Button
-                  variant="secondary"
-                  className="w-full mt-[16px] flex justify-center items-center gap-[8px]"
-                >
-                  Set Auto Payment <img src={payment} alt="payment" />
-                </Button>
-              </DialogTrigger>
-            )}
-            <DialogContent
-              onInteractOutside={(e) => {
-                e.preventDefault();
+          {(data?.connectedAccount ?? data?.selectedAccount)
+            ?.isSmartContract && (
+            <Dialog
+              open={autoOpened}
+              onOpenChange={(v) => {
+                if (!v) {
+                  setDate(undefined);
+                  setTime(undefined);
+                }
+                setAutoOpened(v);
               }}
             >
-              <div className="flex flex-col gap-[24px] font-sans">
-                <div className="text-[20px] leading-[32px] font-bold">
-                  Set Auto Payment
-                </div>
-                <div className="flex flex-col gap-[4px]">
-                  <div className="text-[14px] leading-[24px] text-muted-foreground">
-                    Select date
-                  </div>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className={cn(
-                          'flex items-center justify-between w-full gap-[8px] text-left font-normal',
-                          !date && 'text-muted-foreground'
-                        )}
-                      >
-                        {date ? (
-                          format(date, 'dd/MM/yyyy')
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <img src={calendar} alt="calendar" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0 w-auto border-none">
-                      <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={setDate}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="flex flex-col gap-[4px]">
-                  <div className="text-[14px] leading-[24px] text-muted-foreground">
-                    Select time
-                  </div>
-                  <Input
-                    type="time"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    lang="en-US"
-                  />
-                </div>
-                <div className="flex w-full items-center gap-[8px]">
+              {!txToSign?.isContractWalletDeployment && (
+                <DialogTrigger asChild>
                   <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => {
-                      setDate(undefined);
-                      setTime(undefined);
-                      setAutoOpened(false);
-                    }}
+                    variant="secondary"
+                    className="w-full mt-[16px] flex justify-center items-center gap-[8px]"
                   >
-                    Cancel
+                    Set Auto Payment <img src={payment} alt="payment" />
                   </Button>
-                  <Button className="flex-1" onClick={onSaveAutoPaymentClick}>
-                    Save
-                  </Button>
+                </DialogTrigger>
+              )}
+              <DialogContent
+                onInteractOutside={(e) => {
+                  e.preventDefault();
+                }}
+              >
+                <div className="flex flex-col gap-[24px] font-sans">
+                  <div className="text-[20px] leading-[32px] font-bold">
+                    Set Auto Payment
+                  </div>
+                  <div className="flex flex-col gap-[4px]">
+                    <div className="text-[14px] leading-[24px] text-muted-foreground">
+                      Select date
+                    </div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className={cn(
+                            'flex items-center justify-between w-full gap-[8px] text-left font-normal',
+                            !date && 'text-muted-foreground'
+                          )}
+                        >
+                          {date ? (
+                            format(date, 'dd/MM/yyyy')
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <img src={calendar} alt="calendar" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0 w-auto border-none">
+                        <Calendar
+                          mode="single"
+                          selected={date}
+                          onSelect={setDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="flex flex-col gap-[4px]">
+                    <div className="text-[14px] leading-[24px] text-muted-foreground">
+                      Select time
+                    </div>
+                    <Input
+                      type="time"
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                      lang="en-US"
+                    />
+                  </div>
+                  <div className="flex w-full items-center gap-[8px]">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => {
+                        setDate(undefined);
+                        setTime(undefined);
+                        setAutoOpened(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button className="flex-1" onClick={onSaveAutoPaymentClick}>
+                      Save
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
       <div className="flex items-center gap-[24px] mt-[32px]">

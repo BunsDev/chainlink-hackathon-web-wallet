@@ -14,6 +14,7 @@ export type GetCurrentNetworkDTO = {
   nativeName: string;
   isActive: boolean;
   image: any;
+  coingeckoId: string;
 };
 
 export const getCurrentNetwork: BackgroundOnMessageCallback<
@@ -33,5 +34,6 @@ export const getCurrentNetwork: BackgroundOnMessageCallback<
     nativeSymbol: network.nativeSymbol,
     image: network.image,
     isActive: true,
+    coingeckoId: network.coingeckoId,
   };
 };

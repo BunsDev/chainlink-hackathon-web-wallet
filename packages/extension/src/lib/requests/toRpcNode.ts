@@ -57,6 +57,7 @@ export const getSupportedNetworks = () => {
       nativeName: 'Sepolia Ether',
       nativeSymbol: 'SEP ETH',
       image: eth,
+      coingeckoId: 'ethereum',
     },
     {
       jsonRpcUrl:
@@ -67,6 +68,7 @@ export const getSupportedNetworks = () => {
       nativeName: 'Ether',
       nativeSymbol: 'ETH',
       image: eth,
+      coingeckoId: 'ethereum',
     },
   ];
   return networkConfig.map((v) => ({

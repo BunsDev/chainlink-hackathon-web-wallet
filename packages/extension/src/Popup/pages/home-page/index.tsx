@@ -37,6 +37,7 @@ import Browser from 'webextension-polyfill';
 import { Input } from '../../../components/input';
 import { useTransfer } from '../../hooks/mutations/use-transfer';
 import { useConnectWallet } from '../../hooks/mutations/use-connect-wallet';
+import { usePrice } from '../../hooks/read/use-price';
 
 const Header = () => {
   const [networkOpened, setNetworkOpened] = useState(false);
@@ -352,22 +353,27 @@ const SubHeader = () => {
 const Balance = () => {
   const { data } = useUserAccounts();
   const { data: currentNetwork } = useCurrentNetwork();
-  const formatBalance = (balance?: string) => {
-    return balance ? parseFloat(balance).toFixed(4) : '0.0000';
-  };
+  const { data: prices } = usePrice();
+
+  const { balance, balanceUsd } = useMemo(() => {
+    const balance = parseFloat(data?.selectedAccount?.balanceNative ?? '0');
+    const price = prices?.[currentNetwork?.coingeckoId ?? ''] ?? 0;
+
+    return {
+      balance: `${balance.toFixed(4)} ${currentNetwork?.nativeSymbol}`,
+      balanceUsd: `$${(balance * price).toFixed(2)}`,
+    };
+  }, [data, currentNetwork, prices]);
 
   return (
     <div className="flex flex-col items-center gap-[8px] mt-[34px]">
       <div className="flex items-center gap-[8px] justify-center">
         <img src="/assets/icon_ethereum.svg" alt="ethereum" />
-        <div className="text-[24px] leading-[32px] font-bold">
-          {formatBalance(data?.selectedAccount?.balanceNative)}{' '}
-          {currentNetwork?.nativeSymbol}
-        </div>
+        <div className="text-[24px] leading-[32px] font-bold">{balance}</div>
       </div>
 
       <div className="text-[14px] leading-[22px] text-muted-foreground">
-        $206.00
+        {balanceUsd}
       </div>
     </div>
   );
@@ -449,8 +455,7 @@ const Transfer = () => {
     }
 
     try {
-      const result = await transfer({ address: parsedAddress, amount });
-      alert(result);
+      await transfer({ address: parsedAddress, amount });
       toast.success('Transfer successful');
     } catch (e) {
       toast.error('Transfer failed');

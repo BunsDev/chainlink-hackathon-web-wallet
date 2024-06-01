@@ -37,5 +37,6 @@ export const getAllNetworks: BackgroundOnMessageCallback<
     nativeSymbol: network.nativeSymbol,
     image: network.image,
     isActive: network.name === selectedNetwork.name,
+    coingeckoId: network.coingeckoId,
   }));
 };
