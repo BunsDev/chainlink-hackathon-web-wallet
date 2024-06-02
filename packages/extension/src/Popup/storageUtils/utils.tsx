@@ -24,8 +24,6 @@ export async function createPasswordForMnemonic(
 export async function decryptPrivatKeyViaPassword(password: any) {
   const cryptedPk = await walletStorage.get('AesPk');
 
-  if (!cryptedPk) return console.log('!aesPk');
-
   const decryptedPrivateKey = CryptoJS.AES.decrypt(
     cryptedPk,
     password

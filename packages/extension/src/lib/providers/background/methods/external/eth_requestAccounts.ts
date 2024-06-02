@@ -19,7 +19,6 @@ export const ethRequestAccounts: BackgroundOnMessageCallback<
   string[],
   EthereumRequest
 > = async (request, origin) => {
-  console.log('ethRequestAccounts');
   const payload = request.msg;
   const domain = getBaseUrl(origin);
 

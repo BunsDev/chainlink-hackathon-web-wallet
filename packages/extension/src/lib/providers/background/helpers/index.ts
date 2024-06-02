@@ -22,7 +22,6 @@ export const sendAccountChangedToTab = async (
   tabs.forEach((tab) => {
     if (!tab || !tab.id) return;
 
-    console.log({ switchTo });
     let req = !!switchTo
       ? {
           method: MessageMethod.changeAddress,
@@ -51,8 +50,6 @@ export const sendNetworkChangedToTab = async (
 
   tabs.forEach((tab) => {
     if (!tab || !tab.id) return;
-
-    console.log({ switchToNetworkChainId });
 
     sendMessageToTab<EthereumRequest>(tab.id, PostMessageDestination.WINDOW, {
       method: MessageMethod.changeChainId,

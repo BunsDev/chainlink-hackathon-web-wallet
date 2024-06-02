@@ -24,7 +24,6 @@ export const makeRpcRequest: BackgroundOnMessageCallback<
 
   const curNetwork = await getCurrentNetwork();
   const res = await curNetwork.rpcProvider.send(req.method, req.params ?? []);
-  console.log('rpc req result', res);
   return res;
 };
 

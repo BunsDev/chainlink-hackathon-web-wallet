@@ -41,11 +41,6 @@ export const getUserAddresses: BackgroundOnMessageCallback<
   );
   const connectedAccounts = await storageDomains.get<string[]>(domain);
 
-  console.log('domain', domain);
-  console.log('accounts', accounts);
-  console.log('selectedAccount', selectedAccount);
-  console.log('connectedAccounts', connectedAccounts);
-
   if (!accounts || !accounts.length) {
     throw getCustomError('getUserAddresses: 0 accounts');
   }

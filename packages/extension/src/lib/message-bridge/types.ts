@@ -86,8 +86,6 @@ export class WindowCSMessageBridge {
         public readonly prefix?: string) {
         windowOnMessage(
             async (msg) => {
-                console.log(`${this.prefix} BRIDGE:`, msg)
-                // console.log('inner handler', msg)
                 this.WINDOW_MSG_EE.emit(
                     msg.type == WindowPostMessagePayloadType.REQUEST ?
                         WINDOW_CS_REQUEST_EN : WINDOW_CS_RESPONSE_EN,
@@ -97,28 +95,19 @@ export class WindowCSMessageBridge {
     }
 
     windowSubscribeRequest(callback: (...args: any[]) => void, content?: any) {
-        console.log('Sub Req')
         this.WINDOW_MSG_EE.addListener(WINDOW_CS_REQUEST_EN, callback, content)
-        console.log('count', this.WINDOW_MSG_EE.listenerCount(WINDOW_CS_REQUEST_EN));
     }
 
     windowSubscribeResponse(callback: (...args: any[]) => void, content?: any) {
-        console.log('Sub Resp')
         this.WINDOW_MSG_EE.addListener(WINDOW_CS_RESPONSE_EN, callback, content)
-        console.log('count', this.WINDOW_MSG_EE.listenerCount(WINDOW_CS_RESPONSE_EN));
     }
 
     windowUnSubscribeRequest(callback: (...args: any[]) => void, content?: any) {
-        console.log('UnSub Req', this.WINDOW_MSG_EE.listenerCount(WINDOW_CS_REQUEST_EN))
         this.WINDOW_MSG_EE.removeListener(WINDOW_CS_REQUEST_EN, callback, content)
-        console.log(this.WINDOW_MSG_EE.listenerCount(WINDOW_CS_REQUEST_EN))
-
     }
 
     windowUnSubscribeResponse(callback: (...args: any[]) => void, content?: any) {
-        console.log('UnSub Resp', this.WINDOW_MSG_EE.listenerCount(WINDOW_CS_RESPONSE_EN))
         this.WINDOW_MSG_EE.removeListener(WINDOW_CS_RESPONSE_EN, callback, content)
-        console.log(this.WINDOW_MSG_EE.listenerCount(WINDOW_CS_RESPONSE_EN))
     }
 
 }

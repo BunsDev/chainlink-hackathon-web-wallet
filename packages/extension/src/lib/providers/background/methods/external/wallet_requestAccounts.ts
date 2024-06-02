@@ -26,7 +26,6 @@ export const walletRequestAccounts: BackgroundOnMessageCallback<
   RequestWalletAccountsResponseDTO,
   EthereumRequest
 > = async (request, origin) => {
-  console.log('walletRequestAccounts');
   const storageAddresses = new Storage(StorageNamespaces.USER_WALLETS);
   const accounts = await storageAddresses.get<UserAccount[]>('accounts');
 

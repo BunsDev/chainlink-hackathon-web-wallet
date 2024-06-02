@@ -18,9 +18,7 @@ import { EthereumRequest } from '../lib/providers/types';
 
 function injectScript() {
   try {
-    console.log('inject script');
     const injectURL = browser.runtime.getURL('inject.bundle.js');
-    console.log('url', injectURL);
     const container = document.head || document.documentElement;
     const scriptTag = document.createElement('script');
     scriptTag.setAttribute('async', 'false');
@@ -28,7 +26,6 @@ function injectScript() {
     scriptTag.id = 'proxy-wallet-inject';
 
     scriptTag.onload = function () {
-      console.info('Hello from the content-script');
       container.removeChild(scriptTag);
     };
 
@@ -41,19 +38,13 @@ function injectScript() {
 const onWindowMessage = async (...args: any[]) => {
   const payload = args[0] as WindowPostMessagePayload;
 
-  console.log('onWindowMessage', args);
-
   if (!payload || payload.type !== WindowPostMessagePayloadType.REQUEST) {
-    console.debug('CS onWindowMessage: unsatisfied payload');
     return;
   }
 
-  // console.log('CS msg handle: ', msg);
   const resp = await sendRuntimeMessageToBackground(
     JSON.parse(payload.msg) as EthereumRequest
   );
-
-  console.log('WindowToCS send response', resp);
 
   window.postMessage(
     new WindowPostMessagePayload({
@@ -69,8 +60,6 @@ initWindowBridge('content-script');
 CS_WINDOW_BRIDGE.windowSubscribeRequest(onWindowMessage);
 
 windowOnRuntimeMessage(async (req, domain) => {
-  console.log('windowOnRuntimeMessage', req.msg);
-
   window.postMessage(
     new WindowPostMessagePayload({
       msg: JSON.stringify(req.msg),

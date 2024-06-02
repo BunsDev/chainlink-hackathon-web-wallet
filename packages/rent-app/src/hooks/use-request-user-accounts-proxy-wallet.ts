@@ -17,8 +17,6 @@ export const useRequestUserAccountsProxyWallet = () => {
 
     queryFn: async () => {
       if (!walletClient) return;
-      console.log('wallet_requestAccounts before');
-
       const proxyWalletClient = walletClient.extend((client) => ({
         async walletRequestAccounts() {
           return (await client.request({

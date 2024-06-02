@@ -22,7 +22,6 @@ export const ethSignTypedDataV4: BackgroundOnMessageCallback<
   unknown,
   EthereumRequestOverrideParams<SignTypedDataV4Dto>
 > = async (request, domain) => {
-  console.log('ethSignTypedDataV4', request);
   const payload = request.msg;
 
   if (!payload || !payload.params) {
@@ -49,8 +48,6 @@ export const ethSignTypedDataV4: BackgroundOnMessageCallback<
           getAddress(userSelectedAccount.masterAccount!)
       )
     : null;
-
-  console.log({ isSmartAccount });
 
   if (masterWalletAccount === undefined) {
     throw new Error('Master account is not found');
@@ -95,13 +92,10 @@ export const ethSignTypedDataV4: BackgroundOnMessageCallback<
 
   const account = privateKeyToAccount(decryptedPk as '0x');
 
-  console.log('before sign');
-
   const signedData = await account.signTypedData({
     account: getAddress(from),
     ...JSON.parse(data),
   });
 
-  console.log('signed data', signedData);
   return signedData;
 };

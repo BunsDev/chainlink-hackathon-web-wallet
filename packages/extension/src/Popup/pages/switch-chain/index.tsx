@@ -78,7 +78,6 @@ const SwitchChainDataPage: React.FC<ImportSmartWalletPageProps> = ({
         throw err;
       }
 
-      console.log('Sign data:', req.msg.params);
       setTxToSign(req.msg.params[0]);
       setIsLoaded(true);
       return pagePromise;

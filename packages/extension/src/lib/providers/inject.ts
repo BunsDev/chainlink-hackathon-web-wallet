@@ -60,12 +60,9 @@ export class Provider extends EventEmitter implements ProviderInterface {
     return this.sendMessageHandler(JSON.stringify(request));
   }
   enable(): Promise<any> {
-    console.log('enable', this.connected);
-
     return this.request({ method: 'eth_requestAccounts' });
   }
   isConnected(): boolean {
-    console.log('is connected', this.connected);
     return this.connected;
   }
   //deprecated
@@ -89,7 +86,6 @@ export class Provider extends EventEmitter implements ProviderInterface {
       .catch((err) => callback(err));
   }
   handleMessage(msg: string): void {
-    console.log('handleMessage');
     handleIncomingMessage(this, msg);
   }
 }

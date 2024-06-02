@@ -42,8 +42,6 @@ export const useRequiredNativeRent = () => {
     args: [info?.nativeToLinkPath!, info?.linkFee!],
   });
 
-  console.log({ data: data?.result });
-
   if (!data || !data.result) return BigInt(0);
 
   return data.result[0] + data.result[0] / BigInt(10);

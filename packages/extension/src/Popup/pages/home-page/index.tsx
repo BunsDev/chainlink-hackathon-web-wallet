@@ -60,7 +60,6 @@ const Header = () => {
         await switchNetwork({ switchTo: id });
       } catch (e) {
         toast.error('Failed to switch network. Try again later.');
-        console.error(e);
       }
     },
     [networksData, switchNetwork]

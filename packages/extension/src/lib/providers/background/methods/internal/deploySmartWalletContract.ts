@@ -41,8 +41,6 @@ export const deploySmartWalletContract: BackgroundOnMessageCallback<
   DeployedContractResult,
   EthereumRequest<GetDeploySmartWalletContractTxDto>
 > = async (req, domain) => {
-  console.log('deploySmartWalletContract');
-
   const [tx] = req.msg?.params!;
 
   const storageWallets = new Storage(StorageNamespaces.USER_WALLETS);
@@ -68,8 +66,6 @@ export const deploySmartWalletContract: BackgroundOnMessageCallback<
     address: tx.address,
     txHash,
   };
-
-  console.log('DEPLOY CONTRACT RESULT:', result);
 
   accounts.push({
     address: tx.address,

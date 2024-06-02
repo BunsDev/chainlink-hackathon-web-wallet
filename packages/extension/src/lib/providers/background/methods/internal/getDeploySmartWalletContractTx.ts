@@ -38,8 +38,6 @@ export const getDeploySmartWalletContractTx: BackgroundOnMessageCallback<
   GetDeploySmartWalletContractTxDto,
   EthereumRequest
 > = async (req, domain) => {
-  console.log('getDeploySmartWalletContractTx');
-
   const storageWallets = new Storage(StorageNamespaces.USER_WALLETS);
 
   const selectedAccount = await getActiveAccountForSite(domain);

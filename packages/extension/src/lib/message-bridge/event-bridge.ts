@@ -6,7 +6,6 @@ export function windowOnMessage(
     callback: (msg: WindowPostMessagePayload) => Promise<void>) {
 
     const handleMessage = (event: MessageEvent) => {
-        console.log('handleMessage', event.data)
         // if (event.origin !== window.origin) return;
         const msg = WindowPostMessagePayload.fromJson(event.data);
 
@@ -40,8 +39,6 @@ export const sendMessageFromWindowToCS: SendMessageHandler = async (message) => 
                 console.debug('sendMessageFromWindowToCS: invalid resp payload');
                 return;
             }
-            console.log('WindowToCS response', payload)
-
             const respPayload = JSON.parse(payload.msg) as RuntimeOnMessageResponse;
 
 

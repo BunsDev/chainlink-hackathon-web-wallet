@@ -57,7 +57,6 @@ export const convertTxToAutoExecute: BackgroundOnMessageCallback<
   ConvertTxToAutoExecuteDto,
   EthereumRequest<ConvertTxToAutoExecuteDto>
 > = async (request, origin) => {
-  console.log('convertTxToAutoExecute', request, origin);
   const payload = request.msg;
   const domain = getBaseUrl(origin);
 
@@ -132,7 +131,6 @@ export const convertTxToAutoExecute: BackgroundOnMessageCallback<
   txRequest.to = populatedTx.to;
 
   txRequest.gasLimit = await rpcProvider.estimateGas(txRequest).catch((err) => {
-    console.log('estimate gas error', err);
     return BigNumber.from(5_000_000);
   });
 

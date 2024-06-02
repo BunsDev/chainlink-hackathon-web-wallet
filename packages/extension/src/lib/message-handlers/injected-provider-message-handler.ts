@@ -29,7 +29,6 @@ const handleIncomingMessage: HandleIncomingMessageFunction = (
 
         if (jsonMsg.method === MessageMethod.changeConnected) {
             const isConnected = jsonMsg.params[0] as boolean;
-            console.log('CHANGE CONNECTED', isConnected);
             _provider.connected = isConnected;
             if (isConnected) {
                 const connectionInfo: ProviderConnectInfo = {
@@ -53,7 +52,6 @@ const handleIncomingMessage: HandleIncomingMessageFunction = (
                 _provider.emit(EmitEvent.chainChanged, chainId);
             }
         } else if (jsonMsg.method === MessageMethod.changeAddress) {
-            console.log('CHANGE ADDRESS!!!!');
             const address = jsonMsg.params[0] as string;
             if (_provider.selectedAddress !== address) {
                 _provider.selectedAddress = address;

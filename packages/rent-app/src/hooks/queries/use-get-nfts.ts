@@ -107,7 +107,6 @@ export const useGetNfts = () => {
               metadata,
             };
           } catch (error) {
-            console.error(error);
             return null;
           }
         })

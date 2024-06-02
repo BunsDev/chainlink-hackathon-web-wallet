@@ -46,7 +46,6 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
   unknown,
   EthereumRequest<SendTransactionRequestDTO>
 > = async (request, origin) => {
-  console.log('ethRequestAccounts', request);
   const payload = request.msg;
   const domain = getBaseUrl(origin);
 
@@ -56,11 +55,6 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
 
   const [txRequest] = payload.params;
 
-  console.log('Origin TxRequest', txRequest);
-
-  // const txRequest =   ethers.utils.parseTransaction(txRequestRaw) as TransactionRequest;
-
-  console.log({ txRequest });
   const window = new WindowPromise();
 
   const storageAddresses = new Storage(StorageNamespaces.USER_WALLETS);
@@ -89,8 +83,6 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
       )
     : null;
 
-  console.log({ isSmartAccount });
-
   if (masterWalletAccount === undefined) {
     throw new Error('Master account is not found');
   }
@@ -112,16 +104,11 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
         rpcProvider
       );
 
-      console.log('tx.to', txRequest.to);
-      console.log('tx.datatx.data', txRequest.data);
-
       const populatedTx = await walletContract.populateTransaction.execute(
         txRequest.to,
         txRequest.value ?? '0',
         txRequest.data ?? '0x'
       );
-
-      console.log('populatedTx', populatedTx);
 
       txRequest.data = populatedTx.data ?? '0x';
       txRequest.to = populatedTx.to;
@@ -145,7 +132,6 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
     const estimatedGas = await rpcProvider
       .estimateGas(txRequest as any)
       .catch((err) => {
-        console.error('estimate gas err', err);
         return BigNumber.from(1_000_000);
       });
     txRequest.gasLimit =
@@ -154,10 +140,6 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
   }
 
   let tx = txRequest;
-
-  console.log('tx.data', tx.data);
-  console.log('isSmartAccount', isSmartAccount);
-  console.log('request.triggerPopup', request.triggerPopup);
 
   // TODO: pass flag to trigger/not-trigger popup menu
   // to be able to use this bg handler for internal purposes
@@ -184,7 +166,6 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
 
     if (response.error) throw response.error;
     tx = response.result ?? tx;
-    console.log('trueTX', tx);
   }
 
   if (isSmartAccount && !txRequest.useMasterAccountValue) delete tx.value;
@@ -193,8 +174,6 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
 
   delete tx.maxFeePerGas;
   delete tx.maxPriorityFeePerGas;
-
-  console.log('default tx', tx);
 
   const password = await getSessionPassword();
 
@@ -224,8 +203,6 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
     // maxPriorityFeePerGas: bnToHex(tx.maxPriorityFeePerGas),
     value: bnToHex(tx.value),
   });
-
-  console.log('signedTx', signedTx);
 
   (payload.params as any[])[0] = signedTx;
 

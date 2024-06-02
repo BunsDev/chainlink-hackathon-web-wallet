@@ -22,7 +22,6 @@ export const ethSendRawTransaction: BackgroundOnMessageCallback<
   unknown,
   EthereumRequest<string>
 > = async (request, origin) => {
-  console.log('ethSendRawTransaction');
   const payload = request.msg;
   const domain = getBaseUrl(origin);
 
@@ -60,7 +59,6 @@ export const ethSendRawTransaction: BackgroundOnMessageCallback<
   const waitForTx = async () => {
     const interval = setInterval(
       async () => {
-        console.log('check tx status interval');
         const tx = await rpcProvider.getTransaction(txParsed.hash!);
         const txReceipt = await rpcProvider.getTransactionReceipt(
           txParsed.hash!
@@ -84,7 +82,6 @@ export const ethSendRawTransaction: BackgroundOnMessageCallback<
               type: 'basic',
             },
             function () {
-              console.log('created!');
             }
           );
         };

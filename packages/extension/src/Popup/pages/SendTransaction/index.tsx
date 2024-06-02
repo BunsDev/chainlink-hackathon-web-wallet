@@ -102,8 +102,6 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
       executeAfter,
     });
 
-    console.log({ autoSendTx });
-
     setTxToSign(autoSendTx);
     setAutoOpened(false);
   }, [originalTx, date, time, convertTxToAutoExecute]);
@@ -131,7 +129,6 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
 
       const [tx] = req.msg.params;
 
-      console.log('Transaction:', tx);
       setTxToSign(tx);
       setOriginalTx(tx);
       setIsLoaded(true);

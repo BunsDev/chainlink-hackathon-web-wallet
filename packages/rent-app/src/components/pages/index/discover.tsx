@@ -115,12 +115,10 @@ const DiscoverCard = ({
           });
         },
       }));
-      console.log({ deploymentAddress });
       await proxyWalletClient.importSmartAccount({
         address: deploymentAddress,
       });
     } catch (error) {
-      console.error(error);
       toast.error('Failed to rent NFT');
     } finally {
       setIsLoading(false);

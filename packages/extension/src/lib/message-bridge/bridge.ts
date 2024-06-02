@@ -62,7 +62,6 @@ const sendRuntimeMessage = async <TMsg = any, TReturn = any>(
   type: RuntimePostMessagePayloadType = RuntimePostMessagePayloadType.EXTERNAL
 ) => {
   return new Promise<RuntimeOnMessageResponse<TReturn>>((resolve, _) => {
-    console.debug(`send message to ${destination}`, msg);
     chrome.runtime.sendMessage(
       new RuntimePostMessagePayload<TMsg>({
         msg: msg,
@@ -70,7 +69,6 @@ const sendRuntimeMessage = async <TMsg = any, TReturn = any>(
         type,
       }),
       (response: RuntimeOnMessageResponse) => {
-        console.log(`${destination} response`, response);
         resolve(response);
       }
     );
@@ -130,17 +128,14 @@ const runtimeOnMessage = (
   ) {
     if (request.destination !== destination) return;
 
-    console.log(`${destination} runtimeOnMessage`, request);
 
     const promise = async () => {
       try {
         const res = await callback(request, sender.origin ?? 'unknown');
-        console.log(`${destination} RUNTIME RESPONSE`, res);
         sendResponse({
           result: res,
         } as RuntimeOnMessageResponse);
       } catch (err) {
-        console.log(`${destination} RUNTIME ON MESSAGE ERROR`, err);
         sendResponse({
           error: err,
         } as RuntimeOnMessageResponse);
@@ -226,10 +221,8 @@ class WindowPromise {
   ): Promise<RuntimeOnMessageResponse<TResult>> {
     return new Promise((resolve) => {
       Browser.tabs.onUpdated.addListener(function listener(_tabId, info, tab) {
-        console.log('status: ', tab, url, _tabId, tabId);
 
         if (info.status === 'complete' && _tabId === tabId && tab.url === url) {
-          console.log('status: completed');
           resolve(
             sendMessageToNewPopupWindow(
               tabId,
@@ -258,7 +251,6 @@ class WindowPromise {
     unlockKeyring = false
   ): Promise<RuntimeOnMessageResponse<TResult>> {
     const loadingPath = '/' + getPopupPath(UIRoutes.loading.path);
-    console.log('loadingPath', loadingPath);
     const windowInfo = await Browser.windows.create({
       url: loadingPath,
       type: 'panel',
@@ -268,19 +260,15 @@ class WindowPromise {
       top: 0,
     });
 
-    console.log('window info', windowInfo);
 
     const tabId: number | undefined = windowInfo.tabs?.length
       ? windowInfo.tabs[0].id
       : 0;
-    console.log('tabId', tabId);
 
     const [currentTabUrl] = await Browser.tabs.query({
       active: true,
       currentWindow: true,
     });
-
-    console.log('currentTabUrl: ', currentTabUrl);
 
     if (typeof tabId === 'undefined') {
       return Promise.resolve({
@@ -292,14 +280,11 @@ class WindowPromise {
       while ((await Browser.tabs.get(tabId)).status !== 'complete') {}
     };
     await waitForWindow();
-    console.log('waitedForWindow');
 
     const monitorTabs = (): Promise<RuntimeOnMessageResponse> => {
       return new Promise((resolve) => {
         Browser.tabs.onRemoved.addListener(function tabListener(_tabId) {
-          console.log('onRemoved');
           if (_tabId === tabId) {
-            console.log('onRemoved matched tab');
             Browser.tabs.onRemoved.removeListener(tabListener);
             resolve({
               error: getError(ErrorCodes.userRejected),
@@ -322,10 +307,7 @@ class WindowPromise {
         currentTabUrl.url ?? 'unknown'
       );
 
-      console.log('isKeyRingLockedd', isKeyRingLocked);
-
       if (unlockKeyring && isKeyRingLocked) {
-        console.log('unlock keyring', isKeyRingLocked);
 
         const unlockKeyring = await this.getRawResponse(
           Browser.runtime.getURL(UNLOCK_PATH),
@@ -355,8 +337,6 @@ class WindowPromise {
         return res;
       });
     };
-
-    console.log('wait for promises');
 
     return Promise.race([monitorTabs(), executePromise()]);
   }

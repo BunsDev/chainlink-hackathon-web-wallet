@@ -71,7 +71,6 @@ const SignTypedDataPage: React.FC<SendTransactionPageProps> = ({
         throw err;
       }
 
-      console.log('Sign data:', req.msg.params);
       setTxToSign(req.msg.params);
       setIsLoaded(true);
       return pagePromise;

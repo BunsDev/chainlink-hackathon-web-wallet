@@ -28,7 +28,6 @@ export const ethCall: BackgroundOnMessageCallback<
   unknown,
   EthereumRequest<TransactionRequest>
 > = async (request, origin) => {
-  console.log('ethCall', request);
   const payload = request.msg;
   const domain = getBaseUrl(origin);
 
@@ -71,7 +70,6 @@ export const ethCall: BackgroundOnMessageCallback<
   txRequest.from ??= senderAddress;
 
   if (isSmartAccount) {
-    console.log('eth_call through contract');
     txRequest.from = userSelectedAccount.masterAccount!;
 
     if (!txRequest.to) throw getCustomError('missing argument');
@@ -82,17 +80,11 @@ export const ethCall: BackgroundOnMessageCallback<
         userSelectedAccount.address,
         rpcProvider
       );
-
-      console.log('tx.to', txRequest.to);
-      console.log('tx.datatx.data', txRequest.data);
-
       const populatedTx = await walletContract.populateTransaction.execute(
         txRequest.to,
         txRequest.value ?? '0',
         txRequest.data ?? '0x'
       );
-
-      console.log('populatedTx', populatedTx);
 
       txRequest.data = populatedTx.data ?? '0x';
       txRequest.to = populatedTx.to;
@@ -101,8 +93,6 @@ export const ethCall: BackgroundOnMessageCallback<
   }
 
   payload.params[0] = txRequest;
-
-  console.log('eth call request', request);
 
   return makeRpcRequest(request, origin);
 };

@@ -58,15 +58,9 @@ export const handleBackgroundMessage: BackgroundOnMessageCallback = async (
   request,
   domain
 ) => {
-  console.log('BG sender', domain);
-
   if (request.type === RuntimePostMessagePayloadType.EXTERNAL) {
-    console.log('external', domain);
-
     return await handleExternal(request, domain);
   } else {
-    console.log('internal', domain);
-
     return await handleInternal(request, domain);
   }
 };
@@ -76,8 +70,6 @@ const handleExternal: BackgroundOnMessageCallback<
   EthereumRequestOverrideParams
 > = async (request, domain) => {
   if (!request.msg) throw getCustomError('Invalid payload');
-
-  console.log('bg: handleExternal', request.msg.method);
 
   if (
     request.msg.method == 'eth_accounts' ||
@@ -102,7 +94,6 @@ const handleExternal: BackgroundOnMessageCallback<
   } else if (request.msg.method === 'eth_estimateGas') {
     return ethEstimateGas(request, domain);
   } else {
-    console.log('making direct rpc request');
     return makeRpcRequest(request, domain);
   }
 };
@@ -112,8 +103,6 @@ const handleInternal: BackgroundOnMessageCallback<
   EthereumRequest
 > = async (request, domain) => {
   if (!request.msg) throw getCustomError('Invalid payload');
-
-  console.log('bg: handleInternal req', request);
 
   if (request.msg.method === InternalBgMethods.IS_LOCKED) {
     return isLocked(request, domain);
@@ -152,7 +141,6 @@ const handleInternal: BackgroundOnMessageCallback<
   ) {
     return getDeploySmartWalletContractTx(request, domain);
   } else {
-    console.log('bg: internal unknown method');
     throw getCustomError('Invalid background method');
   }
 };

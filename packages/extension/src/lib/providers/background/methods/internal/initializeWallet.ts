@@ -52,12 +52,8 @@ export const initializeWallet: BackgroundOnMessageCallback<
 
   const payload = msg.params[0] as InitializeWalletPayloadDTO;
 
-  console.log('initializePayload', payload);
-
   const storageWallets = new Storage(StorageNamespaces.USER_WALLETS);
   const commonStorage = new Storage(StorageNamespaces.COMMON);
-
-  console.log('mnemonic: ', payload.mnemonic);
 
   if (await storageWallets.get('mnemonic'))
     throw getCustomError('Already initialized');

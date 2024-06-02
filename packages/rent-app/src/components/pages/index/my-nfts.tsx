@@ -60,7 +60,6 @@ const MyNft = ({ nft, rent }: MyNftProps) => {
       queryClient.invalidateQueries({ queryKey: ['nfts'] });
       toast.success('NFT returned successfully');
     } catch (error) {
-      console.error(error);
       toast.error('Failed to return NFT');
     } finally {
       setIsReturning(false);
