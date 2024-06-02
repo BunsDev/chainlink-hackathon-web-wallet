@@ -21,11 +21,12 @@ import { injected } from 'wagmi/connectors';
 import { Loader2 } from 'lucide-react';
 import { ClientOnly } from '@/components/common/client-only';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { useRequestUserAccountsProxyWallet } from '@/hooks/use-request-user-accounts-proxy-wallet';
 
 const sora = Sora({ subsets: ['latin'], display: 'swap' });
 
 const Header = () => {
-  const { address } = useAccount();
+  const { address, isSmartWallet } = useRequestUserAccountsProxyWallet();
   const { connectAsync, isPending: isConnecting } = useConnect();
   const { disconnectAsync, isPending: isDisconnecting } = useDisconnect();
   const chainId = useChainId();

@@ -5,6 +5,7 @@ import { Address, Hex, parseUnits } from 'viem';
 import { MoralisResult } from '@/pages/api/get-nfts';
 import { useAccount, useReadContract, useSimulateContract } from 'wagmi';
 import { uniswapV3Quoter } from '@/abi/UniswapV3Quoter';
+import { useRequestUserAccountsProxyWallet } from '../use-request-user-accounts-proxy-wallet';
 
 type Info = {
   nativeToLinkPath: Hex;
@@ -22,7 +23,7 @@ const swapInfoPerNetwork: Record<number, Info> = {
 };
 
 export const useRequiredNativeRent = () => {
-  const { chainId } = useAccount();
+  const { chainId } = useRequestUserAccountsProxyWallet();
 
   // if(!chainId) return BigInt(0);
   const info = chainId ? swapInfoPerNetwork[chainId!] : undefined;

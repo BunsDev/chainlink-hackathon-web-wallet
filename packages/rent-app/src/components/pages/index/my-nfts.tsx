@@ -13,6 +13,7 @@ import { ipfsToHttp } from '@/helpers/ipfs';
 import { SUPPORTED_NETWORKS } from '@/constants/chains';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { ListNft } from './list-nft';
+import { useRequestUserAccountsProxyWallet } from '@/hooks/use-request-user-accounts-proxy-wallet';
 
 interface MyNftProps {
   nft: MoralisResult<{ chainId: number }>;
@@ -69,7 +70,7 @@ const MyNft = ({ nft }: MyNftProps) => {
 
 export const MyNfts = () => {
   const [parent] = useAutoAnimate();
-  const { address } = useAccount();
+  const { address } = useRequestUserAccountsProxyWallet();
   const { data: nfts, isLoading } = useGetMyNfts(address);
 
   return (

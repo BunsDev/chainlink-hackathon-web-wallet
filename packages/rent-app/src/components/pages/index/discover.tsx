@@ -55,8 +55,7 @@ const DiscoverCard = ({
   chainId,
 }: DiscoverCardProps) => {
   const [parent] = useAutoAnimate();
-  const { isConnected, address } = useAccount();
-  // const {} = useRequestUserAccountsProxyWallet();
+  const { isConnected, address } = useRequestUserAccountsProxyWallet();
   const [imageSrc, setImageSrc] = useState('https://placehold.co/300x300');
   const { chainSrc, symbol } = useMemo(() => {
     return {
@@ -239,6 +238,7 @@ export const Discover = () => {
   const [filterConragentAddress, setFilterConragentAddress] = useState('');
   const [filterContractAddress, setFilterContractAddress] = useState('');
   const [open, setOpen] = useState(false);
+  const {} = useRequestUserAccountsProxyWallet();
 
   const renderedNfts = useMemo(() => {
     if (!nfts) return [];

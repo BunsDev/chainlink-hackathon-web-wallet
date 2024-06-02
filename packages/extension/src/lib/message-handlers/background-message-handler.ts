@@ -76,7 +76,7 @@ const handleExternal: BackgroundOnMessageCallback<
 > = async (request, domain) => {
   if (!request.msg) throw getCustomError('Invalid payload');
 
-  console.log('bg: handleExternal', request.msg);
+  console.log('bg: handleExternal', request.msg.method);
 
   if (
     request.msg.method == 'eth_accounts' ||

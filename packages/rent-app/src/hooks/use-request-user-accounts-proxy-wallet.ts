@@ -1,23 +1,54 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useAccount, useClient } from 'wagmi';
+import { Address } from 'viem';
+import {
+  useAccount,
+  UseAccountReturnType,
+  useClient,
+  useWalletClient,
+} from 'wagmi';
 
 export const useRequestUserAccountsProxyWallet = () => {
-  const client = useClient();
-  const { address } = useAccount();
-  return useQuery({
-    queryKey: ['user-wallet-accounts', address],
+  const { data: walletClient } = useWalletClient();
+  const useAccountData = useAccount();
+
+  const res = useQuery({
+    queryKey: ['user-wallet-accounts', useAccountData?.address],
+
     queryFn: async () => {
+      if (!walletClient) return;
       console.log('wallet_requestAccounts before');
 
-      const response = await client?.request({
-        method: 'wallet_requestAccounts',
-        params: [],
-      } as any,);
+      const proxyWalletClient = walletClient.extend((client) => ({
+        async walletRequestAccounts() {
+          return (await client.request({
+            // @ts-ignore
+            method: 'wallet_requestAccounts',
+            // @ts-ignore
+            params: [],
+          })) as {
+            address: Address;
+            isSmartWallet: string;
+            swartWalletVersion: string;
+          }[];
+        },
+      }));
 
-      console.log('wallet_requestAccounts', { response });
+      const res = await proxyWalletClient.walletRequestAccounts();
+      const acc = res.length ? res[0] : undefined;
 
-      return response
+      return {
+        isSmartWallet: acc?.isSmartWallet === 'true',
+        ...useAccountData,
+      };
     },
   });
+
+  useEffect(() => {
+    res.refetch();
+  }, [useAccountData]);
+
+  return (res.data ? res.data : useAccountData) as UseAccountReturnType & {
+    isSmartWallet: boolean | undefined;
+  };
 };
