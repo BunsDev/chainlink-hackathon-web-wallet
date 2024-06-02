@@ -53,7 +53,11 @@ export const UIRoutes = {
     name: 'ethConnectDApp',
     component: {},
   },
-
+  ethSwitchChain: {
+    path: 'eth-switch-chain',
+    name: 'ethSwitchChain',
+    component: {},
+  },
   ethHWVerify: {
     path: 'eth-hw-verify',
     name: 'ethHWVerify',
