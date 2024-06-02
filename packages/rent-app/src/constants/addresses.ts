@@ -8,8 +8,8 @@ type ChainAddresses = {
 
 export const contractAddresses = {
   [sepolia.id]: {
-    nftRent: '0x462b63a99F68B14681518a1E12F15119a5581465',
-    smartWalletFactory: '0x690463957Af8ac5bCDf2fac6a433E116774E5E61',
+    nftRent: '0x95ed3F57E77E6734477f3C9674b8F6c8c70B128D',
+    smartWalletFactory: '0xbE8DeE7Ec4A36CDF5b3471BC7Fe4ba3d1331e8e2',
   },
   [mainnet.id]: {
     nftRent: zeroAddress,
