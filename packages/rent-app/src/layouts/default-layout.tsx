@@ -4,17 +4,10 @@ import logoBig from '../assets/img/logo_big.svg';
 import arrowDown from '../assets/img/icons/arrow_down.svg';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Sora, Ubuntu } from 'next/font/google';
+import { Sora } from 'next/font/google';
 import { cn } from '@/lib/utils';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { DropdownMenuItem } from '@radix-ui/react-dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import bsc from '../assets/img/icons/bsc.svg';
 import {
   useAccount,
   useConnect,
@@ -23,7 +16,7 @@ import {
   useSwitchChain,
 } from 'wagmi';
 import { shortenAddress } from '@/helpers/address';
-import { SUPPORTED_NETWORKS } from '@/lib/wagmi';
+import { SUPPORTED_NETWORKS } from '@/constants/chains';
 import { injected } from 'wagmi/connectors';
 import { Loader2 } from 'lucide-react';
 import { ClientOnly } from '@/components/common/client-only';
@@ -32,7 +25,6 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 const sora = Sora({ subsets: ['latin'], display: 'swap' });
 
 const Header = () => {
-  const [isResourcesOpen, setIsResourcesOpen] = useState(false);
   const { address } = useAccount();
   const { connectAsync, isPending: isConnecting } = useConnect();
   const { disconnectAsync, isPending: isDisconnecting } = useDisconnect();
@@ -127,74 +119,9 @@ const Footer = () => {
       <div className="container flex flex-col gap-[24px]">
         <div className="flex flex-col md:flex-row gap-[20px] justify-between">
           <Image src={logoBig} alt="logo" />
-          <div className="flex flex-col md:flex-row w-full gap-[32px] max-w-[530px] justify-between">
-            <div className="flex flex-col gap-[24px]">
-              <div className="text-[16px] font-medium leading-[24px]">
-                Marketplace
-              </div>
-              <div className="flex flex-col gap-[16px]">
-                <Link
-                  href="/"
-                  className="text-muted-foreground text-[14px] leading-[22px]"
-                >
-                  Home
-                </Link>
-                <Link
-                  href="/"
-                  className="text-muted-foreground text-[14px] leading-[22px]"
-                >
-                  Explore
-                </Link>
-                <Link
-                  href="/"
-                  className="text-muted-foreground text-[14px] leading-[22px]"
-                >
-                  Activities
-                </Link>
-              </div>
-            </div>
-            <div className="flex flex-col gap-[24px]">
-              <div className="text-[16px] font-medium leading-[24px]">
-                Resources
-              </div>
-              <div className="flex flex-col gap-[16px]">
-                <Link
-                  href="/"
-                  className="text-muted-foreground text-[14px] leading-[22px]"
-                >
-                  Help Center
-                </Link>
-                <Link
-                  href="/"
-                  className="text-muted-foreground text-[14px] leading-[22px]"
-                >
-                  FAQ
-                </Link>
-              </div>
-            </div>
-            <div className="flex flex-col gap-[24px]">
-              <div className="text-[16px] font-medium leading-[24px]">
-                Links
-              </div>
-              <div className="flex flex-col gap-[16px]">
-                <Link
-                  href="/"
-                  className="text-muted-foreground text-[14px] leading-[22px]"
-                >
-                  Privacy Policy
-                </Link>
-                <Link
-                  href="/"
-                  className="text-muted-foreground text-[14px] leading-[22px]"
-                >
-                  Terms of Services
-                </Link>
-              </div>
-            </div>
-          </div>
         </div>
         <div className="text-[12px] leading-[20px]">
-          &copy; {new Date().getUTCFullYear()} Proxywallet. All rights reserved.
+          &copy; {new Date().getUTCFullYear()} ProxyWallet. All rights reserved.
         </div>
       </div>
     </footer>

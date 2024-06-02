@@ -1,17 +1,7 @@
 import { http, createConfig } from 'wagmi';
 import { mainnet, sepolia, Chain } from 'wagmi/chains';
 import { injected } from 'wagmi/connectors';
-import eth from '../assets/img/icons/eth.svg';
-
-export interface Network {
-  chain: Chain;
-  icon: any;
-}
-
-export const SUPPORTED_NETWORKS = [
-  { chain: sepolia, icon: eth },
-  { chain: mainnet, icon: eth },
-];
+import { SUPPORTED_NETWORKS } from '@/constants/chains';
 
 export const config = createConfig({
   chains: SUPPORTED_NETWORKS.map(({ chain }) => chain) as unknown as [

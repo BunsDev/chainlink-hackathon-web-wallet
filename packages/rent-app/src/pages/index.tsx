@@ -1,10 +1,14 @@
+import { ClientOnly } from '@/components/common/client-only';
 import { Discover } from '@/components/pages/index/discover';
-import { HotNfts } from '@/components/pages/index/hot-nfts';
+import { MyNfts } from '@/components/pages/index/my-nfts';
+import { useAccount } from 'wagmi';
 
 export default function Home() {
+  const { isConnected } = useAccount();
+
   return (
     <>
-      <HotNfts />
+      <ClientOnly>{isConnected && <MyNfts />}</ClientOnly>
       <Discover />
     </>
   );
