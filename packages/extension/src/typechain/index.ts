@@ -3,6 +3,8 @@
 /* eslint-disable */
 export type { SmartWalletFactoryV1 } from "./SmartWalletFactoryV1";
 export type { SmartWalletV1 } from "./SmartWalletV1";
+export type { UniswapV3Quoter } from "./UniswapV3Quoter";
 export * as factories from "./factories";
 export { SmartWalletFactoryV1__factory } from "./factories/SmartWalletFactoryV1__factory";
 export { SmartWalletV1__factory } from "./factories/SmartWalletV1__factory";
+export { UniswapV3Quoter__factory } from "./factories/UniswapV3Quoter__factory";

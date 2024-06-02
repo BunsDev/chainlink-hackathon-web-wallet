@@ -407,6 +407,7 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
                       value={time}
                       onChange={(e) => setTime(e.target.value)}
                       lang="en-US"
+                      className="w-full bg-background"
                     />
                   </div>
                   <div className="flex w-full items-center gap-[8px]">

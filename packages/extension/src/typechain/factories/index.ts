@@ -3,3 +3,4 @@
 /* eslint-disable */
 export { SmartWalletFactoryV1__factory } from "./SmartWalletFactoryV1__factory";
 export { SmartWalletV1__factory } from "./SmartWalletV1__factory";
+export { UniswapV3Quoter__factory } from "./UniswapV3Quoter__factory";

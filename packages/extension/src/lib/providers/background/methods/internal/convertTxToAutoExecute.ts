@@ -25,10 +25,33 @@ import {
 import { hash } from '../../../../utils/crypto';
 import { SendTransactionRequestDTO } from '../external/eth_sendTransaction';
 import { getActiveAccountForSite } from '../../helpers';
+import { Hex, parseUnits } from 'viem';
 
 export type ConvertTxToAutoExecuteDto = TransactionRequest & {
   executeAfter: number;
 };
+
+type Info = {
+  nativeToLinkPath: Hex;
+  uniV3Quoter: Hex;
+  linkFee: bigint;
+};
+
+const swapInfoPerNetwork: Record<number, Info> = {
+  11155111: {
+    nativeToLinkPath:
+      '0x779877a7b0d9e8603169ddbd7836e478b4624789000bb8fff9976782d46cc05630d1f6ebab18b2324d6b14',
+    uniV3Quoter: '0xEd1f6473345F45b75F8179591dd5bA1888cf2FB3',
+    linkFee: parseUnits('7', 18),
+  },
+  137: {
+    nativeToLinkPath:
+      '0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39000bb80d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
+    uniV3Quoter: '0x61fFE014bA17989E743c5F6cB21bF9697530B21e',
+    linkFee: parseUnits('2', 18),
+  },
+};
+
 
 export const convertTxToAutoExecute: BackgroundOnMessageCallback<
   ConvertTxToAutoExecuteDto,

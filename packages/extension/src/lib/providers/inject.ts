@@ -16,7 +16,7 @@ import {
 export class Provider extends EventEmitter implements ProviderInterface {
   chainId: string | null;
   networkVersion: string;
-  isUndas: boolean;
+  isProxyWallet: boolean;
   isMetaMask: boolean;
   selectedAddress: string | null;
   connected: boolean;
@@ -29,7 +29,7 @@ export class Provider extends EventEmitter implements ProviderInterface {
     super();
     this.chainId = null; //deprecated
     this.networkVersion = '0x1'; //deprecated
-    this.isUndas = true;
+    this.isProxyWallet = true;
     this.isMetaMask = true;
     this.selectedAddress = null; //deprecated
     this.connected = true;
@@ -129,6 +129,6 @@ const injectDocument = (
 ): void => {
   const provider = new Provider(options);
   window[provider.name] = new Proxy(provider, new ProviderProxyHandler()); //proxy is needed due to web3js 1.3.0 callbackify issue. Used in superrare
-  window.undasWallet.provider = provider;
+  window.proxyWallet.provider = provider;
 };
 export default injectDocument;

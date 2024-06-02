@@ -77,6 +77,7 @@ export const useGetNfts = () => {
                       address: getAddress(list.tokenContract),
                       functionName: 'tokenURI',
                       args: [BigInt(list.tokenId)],
+                      chainId: parseInt(chainId),
                     },
                   ],
                 });

@@ -31,9 +31,11 @@ var compiler = webpack(config);
 
 var server = new WebpackDevServer(
   {
-    https: false,
+    https: { overlay: false },
     hot: false,
-    client: false,
+    client: {
+      overlay: false,
+    },
     host: 'localhost',
     port: env.PORT,
     static: {

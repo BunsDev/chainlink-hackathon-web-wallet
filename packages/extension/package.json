@@ -1,5 +1,5 @@
 {
-  "name": "@undas/extension",
+  "name": "@proxy-wallet/extension",
   "version": "4.3.5",
   "description": "A chrome extension boilerplate built with React 17, Webpack 5, and Webpack Dev Server 4",
   "license": "MIT",

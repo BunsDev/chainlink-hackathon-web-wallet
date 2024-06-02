@@ -6,7 +6,7 @@ import LocalForage from '../../lib/storage/local-forage';
 var CryptoJS = require('crypto-js');
 
 // LocalForageLib.defineDriver(DummyDriver);
-const localForage = new LocalForage('walletUndas');
+const localForage = new LocalForage('walletProxy');
 const walletStorage = new Storage('walletStorage', { storage: localForage });
 
 export async function createPasswordForMnemonic(
@@ -19,7 +19,6 @@ export async function createPasswordForMnemonic(
     password
   ).toString();
   await walletStorage.set('AesPk', cryptedPrivateKey);
-
 }
 
 export async function decryptPrivatKeyViaPassword(password: any) {
@@ -39,10 +38,10 @@ export async function isPresentCryptedPrivateKeyAtStorage() {
   let isPresent: Boolean = false;
   const cryptedPk = await walletStorage.get('AesPk');
 
-    if (cryptedPk) {
-      isPresent = true;
-    }
-  
+  if (cryptedPk) {
+    isPresent = true;
+  }
+
   return isPresent;
 }
 
