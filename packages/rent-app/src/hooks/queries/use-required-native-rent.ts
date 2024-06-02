@@ -20,6 +20,12 @@ const swapInfoPerNetwork: Record<number, Info> = {
     uniV3Quoter: '0xEd1f6473345F45b75F8179591dd5bA1888cf2FB3',
     linkFee: parseUnits('7', 18),
   },
+  137: {
+    nativeToLinkPath:
+      '0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39000bb80d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
+    uniV3Quoter: '0x61fFE014bA17989E743c5F6cB21bF9697530B21e',
+    linkFee: parseUnits('2', 18),
+  },
 };
 
 export const useRequiredNativeRent = () => {
