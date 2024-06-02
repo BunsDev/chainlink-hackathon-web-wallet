@@ -515,7 +515,7 @@ const Transfer = () => {
               disabled={isPending}
               onClick={onTransfer}
             >
-              {isPending && <Loader2 className="mr-2" />}Transfer
+              {isPending && <Loader2 className="mr-2 animate-spin" />}Transfer
             </Button>
           </div>
         </div>
