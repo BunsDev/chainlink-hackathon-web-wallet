@@ -16,7 +16,7 @@ const getMockedMetadata = (id: string) => {
       'Friendly OpenSea Creature that enjoys long swims in the ocean.',
     external_url: 'https://openseacreatures.io/3',
     image: `https://storage.googleapis.com/opensea-prod.appspot.com/puffs/${id}.png`,
-    name: 'Dave Starbelly',
+    name: `Token #${id}`,
   };
 };
 
