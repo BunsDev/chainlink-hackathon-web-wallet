@@ -29,7 +29,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 
 enum DurationOption {
-  Minuts = 'Minuts',
+  Minutes = 'Minutes',
   Days = 'Days',
   Weeks = 'Weeks',
 }
@@ -88,14 +88,14 @@ const SetupList = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent className="border-none rounded-[7px] bg-white p-0 w-fit">
                 <DropdownMenuItem
-                  onClick={() => setDurationOption(DurationOption.Minuts)}
+                  onClick={() => setDurationOption(DurationOption.Minutes)}
                   className={cn(
                     'transition-all px-[16px] py-[8px] text-[12px] leading-[20px] text-foreground',
-                    durationOption === DurationOption.Minuts &&
+                    durationOption === DurationOption.Minutes &&
                       'bg-primary text-white hover:bg-primary hover:text-white'
                   )}
                 >
-                  Days
+                  Minutes
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => setDurationOption(DurationOption.Days)}
@@ -303,7 +303,7 @@ export const ListNft = ({ nft, setDialogOpen }: ListNftProps) => {
       duration *
         (durationOption === DurationOption.Days
           ? 86400
-          : durationOption === DurationOption.Minuts
+          : durationOption === DurationOption.Minutes
             ? 60
             : 604800)
     );
