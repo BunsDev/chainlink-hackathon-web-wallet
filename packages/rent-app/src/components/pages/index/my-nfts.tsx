@@ -17,7 +17,7 @@ import { usePublicClient, useReadContract, useWriteContract } from 'wagmi';
 import toast from 'react-hot-toast';
 import { nftRentAbi } from '@/abi/NftRent';
 import { getContractAddresses } from '@/constants/addresses';
-import { Address, Hex, erc721Abi } from 'viem';
+import { Hex } from 'viem';
 import Countdown from 'react-countdown';
 
 interface MyNftProps {
@@ -32,12 +32,6 @@ const MyNft = ({ nft, rent }: MyNftProps) => {
   const [isReturning, setIsReturning] = useState(false);
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
-  const { data: spender } = useReadContract({
-    abi: erc721Abi,
-    address: nft.token_address as Address,
-    functionName: 'getApproved',
-    args: [BigInt(nft.token_id)],
-  });
 
   const chainSrc = useMemo(() => {
     return SUPPORTED_NETWORKS.find(({ chain }) => chain.id === nft.chainId)
@@ -50,23 +44,6 @@ const MyNft = ({ nft, rent }: MyNftProps) => {
     setIsReturning(true);
 
     try {
-      if (
-        spender?.toLowerCase() !==
-        getContractAddresses(nft.chainId).nftRent.toLowerCase()
-      ) {
-        const hash = await writeContractAsync({
-          abi: erc721Abi,
-          address: nft.token_address as Address,
-          functionName: 'approve',
-          args: [
-            getContractAddresses(nft.chainId).nftRent as Address,
-            BigInt(nft.token_id),
-          ],
-        });
-
-        await publicClient.waitForTransactionReceipt({ hash });
-      }
-
       const hash = await writeContractAsync({
         abi: nftRentAbi,
         address: getContractAddresses(nft.chainId).nftRent,
@@ -135,9 +112,6 @@ const MyNft = ({ nft, rent }: MyNftProps) => {
               onClick={onReturn}
             >
               {isReturning && <Loader2 className="mr-2 animate-spin" />}
-              {spender?.toLowerCase() !==
-                getContractAddresses(nft.chainId).nftRent.toLowerCase() &&
-                'Approve '}
               Return
             </Button>
           </div>

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { Context } from './Context';
-import MainPage from './pages/MainPage/MainPage';
 import { Wallet } from 'ethers';
 import EnterPasswordPage from './pages/EnterPasswordPage/EnterPasswordPage';
 import CreateWalletPage from './pages/CreateWalletPage/CreateWallet';
