@@ -1,6 +1,4 @@
-import { timeout } from '@/helpers/timeout';
 import { useQuery } from '@tanstack/react-query';
-import { hotNfts } from '@/mocks/nfts';
 import { Address } from 'viem';
 import { MoralisResult } from '@/pages/api/get-nfts';
 

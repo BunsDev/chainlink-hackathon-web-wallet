@@ -79,15 +79,13 @@ const Header = () => {
   return (
     <div className="py-[8px] bg-white px-[24px] items-center justify-between shadow-sm flex">
       <div className="flex items-center gap-[16px]" onClick={onConnectClicked}>
-        {data?.selectedAccount?.isConnected ? (
-          <div className="flex items-center gap-[4px] cursor-pointer">
+        <div className="flex items-center gap-[4px] cursor-pointer">
+          {data?.selectedAccount?.isConnected ? (
             <div className="bg-success rounded-full w-[8px] h-[8px]" />
-          </div>
-        ) : (
-          <div className="flex items-center gap-[4px]">
+          ) : (
             <div className="bg-error rounded-full w-[8px] h-[8px]" />
-          </div>
-        )}
+          )}
+        </div>
         {/* <img src="/assets/main_logo_small.svg" alt="logo" /> */}
         <div className="text-[16px] font-medium leading-[24px]">
           ProxyWallet
@@ -138,7 +136,7 @@ const Header = () => {
             </div>
           </DialogContent>
         </Dialog>
-        <Menu size={16} className="cursor-pointer" />
+        {/* <Menu size={16} className="cursor-pointer" /> */}
       </div>
     </div>
   );

@@ -1,11 +1,11 @@
 {
-  "name": "undas-wallet",
+  "name": "proxy-wallet",
   "version": "4.3.5",
-  "description": "Undas wallet repository",
+  "description": "Proxy wallet repository",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/RedDuck-Software/undas-wallet.git"
+    "url": "https://github.com/RedDuck-Software/chainlink-hackathon-web-wallet.git"
   },
   "private": true,
   "workspaces": [
@@ -16,7 +16,7 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "add:extension": "yarn workspace @undas/extension add",
+    "add:extension": "yarn workspace @proxy-wallet/extension add",
     "test": "yarn workspaces foreach -pv run test",
     "lint": "yarn workspaces foreach run lint",
     "build:all": "ultra -r build && yarn run codegen",

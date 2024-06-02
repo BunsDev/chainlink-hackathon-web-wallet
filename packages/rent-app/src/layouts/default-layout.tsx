@@ -80,7 +80,7 @@ const Header = () => {
                       <div
                         key={chain.id}
                         className={cn(
-                          'w-[133px] flex flex-col rounded-[12px] bg-background p-[16px] gap-[8px] items-center justify-center cursor-pointer trnasition-all hover:bg-[#546FFF] text-[14px] leading-[22px] font-medium hover:text-white',
+                          'w-[133px] flex flex-col rounded-[12px] bg-background p-[16px] gap-[8px] items-center justify-center cursor-pointer transition-all hover:bg-[#546FFF] text-[14px] leading-[22px] font-medium hover:text-white',
                           chainId === chain.id && 'text-white bg-primary'
                         )}
                         onClick={() => onChainClick(chain.id)}
