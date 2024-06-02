@@ -68,7 +68,7 @@ To ensure fault-tolerancy, the auto-execute functions have been made available t
 Currently, users cannot guarantee that a specific wallet will NOT execute an already ALLOWED for them transaction.
 To fix this, the transaction should be DISALLOWED inside their very wallet.
 
-2. Liquid Wallets.
+2. Liquid Wallets and NFTs.
 By allowing to sell or rent a wallet, we create a new liquidity in the market in the form of wallets.
 
 Positions in DeFi protocols, accounts in GameFi products, all of these are now tokenized using this approach.
@@ -84,3 +84,16 @@ When it's required to execute multiple transactions at the same time, you don't 
 Wallets work using the minimal proxy contract standard, which allows for a better gas efficiency when creating a new wallet.
 
 Besides, a smart-contract can potentially optimize your transactions if you execute them in a batch using the smart-contract wallet.
+
+# How to Run
+
+1. nvm install 20
+2. nvm use 20.14.0
+3. npm install yarn
+4. yarn
+5. cd packages/extension
+6. yarn start
+7. add the "build" folder to the extensions in Google Chrome
+    7.1 Remove MetaMask and other conflicting wallets
+    7.2 Go to the -> Three Dots on the top right of Google Chrome -> Extensions -> Manage Extensions
+    7.3 Drag&Drop the "build" folder
