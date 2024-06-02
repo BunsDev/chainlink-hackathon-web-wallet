@@ -28,7 +28,12 @@ import {
   toHex,
 } from 'viem';
 import { SUPPORTED_NETWORKS } from '@/constants/chains';
-import { useAccount, usePublicClient, useWalletClient, useWriteContract } from 'wagmi';
+import {
+  useAccount,
+  usePublicClient,
+  useWalletClient,
+  useWriteContract,
+} from 'wagmi';
 import { ClientOnly } from '@/components/common/client-only';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { nftRentAbi } from '@/abi/NftRent';
@@ -64,7 +69,7 @@ const DiscoverCard = ({
   const { data: walletClient } = useWalletClient();
 
   const onRentNft = async () => {
-    if (!address || isLoading || !walletClient) return;
+    if (!address || isLoading || !walletClient || !publicClient) return;
 
     setIsLoading(true);
     try {
@@ -74,35 +79,36 @@ const DiscoverCard = ({
         encodePacked(['address', 'string'], [address, hashedSeed]),
         'hex'
       );
-      console.log({
-        salt,
-        toHex: toHex(salt),
-      });
-      const deploymentAddress = await publicClient?.readContract({
+      const deploymentAddress = await publicClient.readContract({
         abi: smartWalletFactoryV1Abi,
         address: getContractAddresses(chainId).smartWalletFactory,
         functionName: 'predictCreate2Wallet',
         args: [address, salt],
       });
-      console.log(deploymentAddress);
 
-      await writeContractAsync({
+      const txHash = await writeContractAsync({
         abi: nftRentAbi,
         address: getContractAddresses(chainId).nftRent,
         functionName: 'rent',
-        args: [encodePacked(['bytes32'], [salt])],
+        args: [keccak256(encodePacked(['string'], [salt]))],
         value: BigInt(ethFee) + parseUnits('0.01', 18),
       });
-      // todo: import account
+      if (txHash) {
+        await publicClient.waitForTransactionReceipt({ hash: txHash });
+      }
       toast.success('NFT rented successfully');
-      alert(
-        `NFT rented successfully. Smart wallet address: ${deploymentAddress}`
-      );
-      const updatedWallet = walletClient.extend(client => ({
-        async importSmartAccount() {
-          
-        }
+      const proxyWalletClient = walletClient.extend((client) => ({
+        async importSmartAccount(args: { address: Address }) {
+          return client.request({
+            // @ts-expect-error this method is not standard
+            method: 'wallet_ImportSmartWallet',
+            params: [args.address],
+          });
+        },
       }));
+      await proxyWalletClient.importSmartAccount({
+        address: deploymentAddress,
+      });
     } catch (error) {
       console.error(error);
       toast.error('Failed to rent NFT');
