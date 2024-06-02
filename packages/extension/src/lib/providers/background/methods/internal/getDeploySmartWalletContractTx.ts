@@ -21,7 +21,7 @@ import { getCurrentNetwork } from '../../../../requests/toRpcNode';
 import { SmartWalletFactoryV1__factory } from '../../../../../typechain';
 import { hash } from '../../../../utils/crypto';
 import { SendTransactionRequestDTO } from '../external/eth_sendTransaction';
-import { getActiveAccountForSite } from '../../helpers';
+import { getActiveAccountForSite, getGasPrice } from '../../helpers';
 
 // TODO: move to shared constants
 const factoryAddresses: Record<number, string> = {
@@ -83,9 +83,9 @@ export const getDeploySmartWalletContractTx: BackgroundOnMessageCallback<
 
   deployTx.gasLimit = await factory.estimateGas
     .create2Wallet(selectedAccount.address, selectedAccount.address, salt)
-    .catch((_) => BigNumber.from(100_000));
+    .catch((_) => BigNumber.from(500_000));
 
-  deployTx.gasPrice = await factory.provider.getGasPrice();
+  deployTx.gasPrice = await getGasPrice(factory.provider);
 
   const deploymentAddress = await factory.predictCreate2Wallet(
     selectedAccount.address,

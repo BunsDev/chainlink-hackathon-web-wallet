@@ -10,6 +10,12 @@ import {
   UserAccount,
   UserSelectedAccount,
 } from '../methods/internal/initializeWallet';
+import { ethers } from 'ethers';
+
+export const getGasPrice = async (provider: ethers.providers.Provider) => {
+  const g = await provider.getGasPrice();
+  return g.add(g.div(2));
+};
 
 export const sendAccountChangedToTab = async (
   tabDomain: string,

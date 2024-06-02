@@ -28,7 +28,7 @@ import { SmartWalletV1__factory } from '../../../../../typechain';
 import { decryptValue } from '../../../../utils/crypto';
 import { getSessionPassword } from '../../../../storage/common';
 import { getAddress, formatUnits } from 'ethers/lib/utils';
-import { getActiveAccountForSite } from '../../helpers';
+import { getActiveAccountForSite, getGasPrice } from '../../helpers';
 
 const bnToHex = (value?: BigNumberish) => {
   return value ? BigNumber.from(value).toHexString() : undefined;
@@ -136,9 +136,7 @@ export const ethSendTransaction: BackgroundOnMessageCallback<
   }
 
   if (!txRequest.gasPrice) {
-    const estimatedGasPrice = await rpcProvider.getFeeData();
-
-    txRequest.gasPrice = estimatedGasPrice.gasPrice ?? undefined;
+    txRequest.gasPrice = await getGasPrice(rpcProvider);
   }
 
   if (!txRequest.gasLimit) {
