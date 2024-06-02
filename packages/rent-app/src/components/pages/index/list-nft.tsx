@@ -280,6 +280,8 @@ export const ListNft = ({ nft, setDialogOpen }: ListNftProps) => {
       return setTab(Tab.Review);
     }
 
+    if (!publicClient) return;
+
     setIsLoading(true);
     if (chainId !== nft.chainId) {
       await switchChainAsync({ chainId: nft.chainId });
@@ -304,7 +306,7 @@ export const ListNft = ({ nft, setDialogOpen }: ListNftProps) => {
         });
 
         if (approveHash) {
-          await publicClient?.waitForTransactionReceipt({ hash: approveHash });
+          await publicClient.waitForTransactionReceipt({ hash: approveHash });
         }
 
         queryClient.invalidateQueries({ queryKey });
@@ -323,7 +325,7 @@ export const ListNft = ({ nft, setDialogOpen }: ListNftProps) => {
       });
 
       if (hash) {
-        await publicClient?.waitForTransactionReceipt({ hash });
+        await publicClient.waitForTransactionReceipt({ hash });
       }
       queryClient.invalidateQueries({ queryKey: ['my-nfts'] });
       queryClient.invalidateQueries({ queryKey: ['nfts'] });

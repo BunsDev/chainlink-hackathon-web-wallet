@@ -117,5 +117,6 @@ export const useGetNfts = () => {
 
       return filtered.map((r) => r.value) as UseGetNftsReturnType;
     },
+    refetchInterval: 10000,
   });
 };
