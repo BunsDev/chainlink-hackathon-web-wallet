@@ -51,7 +51,7 @@ interface DiscoverCardProps {
   chainId: number;
 }
 const DiscoverCard = ({
-  nft: { id, tokenId, tokenContract, rentDuration, ethFee, metadata },
+  nft: { id, tokenId, tokenContract, rentDuration, ethFee, metadata, owner },
   chainId,
 }: DiscoverCardProps) => {
   const [parent] = useAutoAnimate();
@@ -115,6 +115,7 @@ const DiscoverCard = ({
           });
         },
       }));
+      console.log({ deploymentAddress });
       await proxyWalletClient.importSmartAccount({
         address: deploymentAddress,
       });
@@ -189,7 +190,7 @@ const DiscoverCard = ({
                       Owner
                     </div>
                     <div className="text-[16px] leading-[24px] font-medium">
-                      {shortenAddress(getAddress(tokenContract))}
+                      {shortenAddress(getAddress(owner))}
                     </div>
                   </div>
                   <div className="w-full h-[1px] bg-[#E7E8F8]" />
