@@ -1,39 +1,21 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import Browser, { commands } from 'webextension-polyfill';
+import React, { useCallback, useEffect } from 'react';
+import Browser from 'webextension-polyfill';
 import { getError } from '../../../lib/errors';
-import {
-  newPopupOnMessage,
-  NewPopupWindowOnMessageCallback,
-} from '../../../lib/message-bridge/bridge';
-import {
-  PostMessageDestination,
-  RuntimeOnMessageResponse,
-  RuntimePostMessagePayload,
-} from '../../../lib/message-bridge/types';
+import { newPopupOnMessage } from '../../../lib/message-bridge/bridge';
+import { RuntimePostMessagePayload } from '../../../lib/message-bridge/types';
 import { ErrorCodes, EthereumRequest } from '../../../lib/providers/types';
 import { usePagePromise } from '../../hooks/usePagePromise';
 import { UserSelectedAccount } from '../../../lib/providers/background/methods/internal/initializeWallet';
+import { useUserAccounts } from '../../hooks/read/use-user-accounts';
+import { shortenAddress } from '../../../lib/utils/address';
+import { Button } from '../../../components/button';
 
 export const ConnectDapp: React.FC = () => {
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
-  const [selectedAccount, setSelectedAccount] = useState<UserSelectedAccount>();
-  const account = useMemo(
-    () =>
-      selectedAccount
-        ? {
-            address: selectedAccount?.isUndasContractSelected
-              ? selectedAccount.undasContract
-              : selectedAccount?.address,
-            isSmartAccount: selectedAccount?.isUndasContractSelected,
-          }
-        : undefined,
-    [selectedAccount]
-  );
+  const { data } = useUserAccounts();
 
   const [pagePromise, pagePromiseFunctions] = usePagePromise<boolean>();
 
   const discardConnect = () => {
-    alert('discard');
     pagePromiseFunctions.reject?.(getError(ErrorCodes.userRejected));
   };
 
@@ -41,13 +23,14 @@ export const ConnectDapp: React.FC = () => {
     pagePromiseFunctions.resolve?.(true);
   };
 
-  const onTabMessage = async (
-    acc: RuntimePostMessagePayload<EthereumRequest<UserSelectedAccount>>
-  ) => {
-    setIsLoaded(true);
-    setSelectedAccount(acc.msg?.params?.[0]);
-    return pagePromise;
-  };
+  const onTabMessage = useCallback(
+    async (
+      acc: RuntimePostMessagePayload<EthereumRequest<UserSelectedAccount>>
+    ) => {
+      return pagePromise;
+    },
+    [pagePromise]
+  );
 
   useEffect(() => {
     newPopupOnMessage<boolean, EthereumRequest<UserSelectedAccount>>(
@@ -58,32 +41,38 @@ export const ConnectDapp: React.FC = () => {
       // discardConnect()
       Browser.runtime.onMessage.removeListener(onTabMessage);
     };
-  }, []);
+  }, [onTabMessage]);
 
   return (
-    <>
-      {!isLoaded ? (
-        <>
-          <span>Loading (Waiting for incoming request from BG)</span>
-        </>
-      ) : (
-        <>
-          <div>
-            {account && <span>Connecting account {account.address}</span>}
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}>
-              <button onClick={discardConnect}>
-                Discard
-              </button>
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                onClick={acceptConnect}
-              >
-                Connect Dapp
-              </button>
-            </div>
+    <div className="flex flex-col gap-[24px] h-full">
+      <div className="flex flex-col gap-[16px]">
+        <div className="text-[24px] leading-[32px] font-bold">
+          Connection request
+        </div>
+        <div className="text-[16px] leading-[24px] text-muted-foreground">
+          A website is requesting to connect to your wallet
+        </div>
+      </div>
+      <div className="flex-1">
+        <div className="bg-white rounded-[22px] p-[16px] flex flex-col gap-[2px]">
+          <div className="text-[12px] leading-[20px] font-medium">
+            {data?.selectedAccount?.isSmartContract
+              ? 'Smart Contract'
+              : 'Master account'}
           </div>
-        </>
-      )}
-    </>
+          <div className="text-[15px] leading-[24px] text-muted-foreground">
+            {shortenAddress(data?.selectedAccount?.address ?? '', 5)}
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-[24px]">
+        <Button className="flex-1" variant="outline" onClick={discardConnect}>
+          Reject
+        </Button>
+        <Button className="flex-1" onClick={acceptConnect}>
+          Accept
+        </Button>
+      </div>
+    </div>
   );
 };

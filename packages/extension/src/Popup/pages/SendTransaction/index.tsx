@@ -48,6 +48,7 @@ import { useConvertTxToAutoExecute } from '../../hooks/mutations/use-convert-tx-
 import { shortenAddress } from '../../../lib/utils/address';
 import { useCurrentNetwork } from '../../hooks/read/use-current-network';
 import { usePrice } from '../../hooks/read/use-price';
+import toast from 'react-hot-toast';
 
 enum Tab {
   Details = 'Details',
@@ -87,16 +88,25 @@ const SendTransactionPage: React.FC<SendTransactionPageProps> = ({
       return;
     }
 
+    const hours = parseInt(time?.split(':')[0] ?? '0');
+    const minutes = parseInt(time?.split(':')[1] ?? '0');
+    const seconds = hours * 60 * 60 + minutes * 60;
+    const executeAfter = Math.floor(date.getTime() / 1000) + seconds;
+    if (executeAfter < Math.floor(Date.now() / 1000)) {
+      setTxToSign(originalTx);
+      toast.error('Date and time should be in the future.');
+      return;
+    }
     const autoSendTx = await convertTxToAutoExecute({
       ...originalTx,
-      executeAfter: Math.floor(date.getTime() / 1000),
+      executeAfter,
     });
 
     console.log({ autoSendTx });
 
     setTxToSign(autoSendTx);
     setAutoOpened(false);
-  }, [originalTx, date, convertTxToAutoExecute]);
+  }, [originalTx, date, time, convertTxToAutoExecute]);
 
   const [pagePromise, pagePromiseFunctions] =
     usePagePromise<SendTransactionRequestDTO>();

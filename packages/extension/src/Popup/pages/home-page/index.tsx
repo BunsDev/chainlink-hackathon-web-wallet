@@ -74,7 +74,7 @@ const Header = () => {
     } else {
       await connectWallet(data.selectedAccount.address);
     }
-  }, [data, disconnectWallet]);
+  }, [data, disconnectWallet, connectWallet]);
 
   return (
     <div className="py-[8px] bg-white px-[24px] items-center justify-between shadow-sm flex">
