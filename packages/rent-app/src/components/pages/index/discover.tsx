@@ -45,18 +45,17 @@ import toast from 'react-hot-toast';
 import { useRequestUserAccountsProxyWallet } from '@/hooks/use-request-user-accounts-proxy-wallet';
 import { useRequiredNativeRent } from '@/hooks/queries/use-required-native-rent';
 
-type Nft = UseGetNftsReturnType[number]['data']['lists'][number];
+type Nft = UseGetNftsReturnType[number]['data'][number];
 interface DiscoverCardProps {
   nft: Nft;
   chainId: number;
 }
 const DiscoverCard = ({
-  nft: { id, tokenId, tokenContract, rentDuration, ethFee },
+  nft: { id, tokenId, tokenContract, rentDuration, ethFee, metadata },
   chainId,
 }: DiscoverCardProps) => {
   const [parent] = useAutoAnimate();
   const { isConnected, address } = useRequestUserAccountsProxyWallet();
-  const [imageSrc, setImageSrc] = useState('https://placehold.co/300x300');
   const { chainSrc, symbol } = useMemo(() => {
     return {
       chainSrc: SUPPORTED_NETWORKS.find(({ chain }) => chain.id === chainId)
@@ -131,9 +130,8 @@ const DiscoverCard = ({
     <div className="w-full max-w-[300px] bg-white rounded-[12px] flex flex-col">
       <div className="relative h-[300px] w-full">
         <Image
-          src={imageSrc}
+          src={metadata.image}
           alt={tokenId}
-          onError={() => setImageSrc('https://placehold.co/300x300')}
           layout="fill"
           objectFit="cover"
           fill
@@ -150,7 +148,7 @@ const DiscoverCard = ({
           </div>
           <div className="flex items-center justify-between">
             <div className="text-[16px] leading-[24px] font-medium">
-              Token #{tokenId}
+              {metadata.name}
             </div>
           </div>
         </div>
@@ -175,15 +173,12 @@ const DiscoverCard = ({
                 </DialogTrigger>
                 <DialogContent className="rounded-[12px] p-[24px] gap-[16px] flex flex-col w-full max-w-[400px]">
                   <div className="text-[20px] leading-[32px] font-bold">
-                    Token #{tokenId}
+                    {metadata.name}
                   </div>
                   <div className="rounded-[12px] relative w-[330px] h-[260px]">
                     <Image
-                      src={imageSrc}
+                      src={metadata.image}
                       alt={tokenId}
-                      onError={() =>
-                        setImageSrc('https://placehold.co/300x300')
-                      }
                       layout="fill"
                       objectFit="cover"
                       className="rounded-[12px] w-[330px] h-[260px]"
@@ -229,7 +224,7 @@ export const Discover = () => {
   const [parent] = useAutoAnimate();
   const { data: nfts, isLoading } = useGetNfts();
   const totalLength = useMemo(() => {
-    return nfts?.reduce((acc, curr) => acc + curr.data.lists.length, 0);
+    return nfts?.reduce((acc, curr) => acc + curr.data.length, 0);
   }, [nfts]);
   const [searchValue, setSearchValue] = useState('');
   const deferredSearchValue = useDeferredValue(searchValue);
@@ -244,7 +239,7 @@ export const Discover = () => {
     if (!nfts) return [];
     return nfts
       .flatMap((nft) => {
-        const items = nft.data.lists.map((item) => ({
+        const items = nft.data.map((item) => ({
           nft: item,
           chainId: nft.chainId,
         }));

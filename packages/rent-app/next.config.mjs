@@ -2,7 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    remotePatterns: [{ hostname: 'placehold.co' }, { hostname: 'ipfs.io' }],
+    remotePatterns: [
+      { hostname: 'placehold.co' },
+      { hostname: 'ipfs.io' },
+      { hostname: 'storage.googleapis.com' },
+    ],
     dangerouslyAllowSVG: true,
   },
 };
