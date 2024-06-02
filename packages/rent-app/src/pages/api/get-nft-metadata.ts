@@ -10,13 +10,23 @@ const bodySchema = z.object({
   tokenURI: z.string(),
 });
 
-const getMockedMetadata = (id: string) => {
+const getMockedMetadataSepolia = (id: string) => {
   return {
     description:
       'Friendly OpenSea Creature that enjoys long swims in the ocean.',
     external_url: 'https://openseacreatures.io/3',
     image: `https://storage.googleapis.com/opensea-prod.appspot.com/puffs/${id}.png`,
-    name: `Token #${id}`,
+    name: `Polygon TT #${id}`,
+  };
+};
+
+const getMockedMetadataPolygon = (id: string) => {
+  return {
+    description:
+      'Friendly OpenSea Creature that enjoys long swims in the ocean.',
+    external_url: 'https://openseacreatures.io/3',
+    image: `https://storage.googleapis.com/opensea-prod.appspot.com/puffs/${id}.png`,
+    name: `Sepolia TT #${id}`,
   };
 };
 
@@ -35,10 +45,13 @@ export default async function getNfts(
   }
 
   const { tokenContract, tokenId, tokenURI } = parsed.data;
-
-  if (tokenURI.includes('test-metadata')) {
+  if (tokenURI.includes('test-metadata-polygon')) {
     return res.status(200).json({
-      data: getMockedMetadata(tokenId),
+      data: getMockedMetadataPolygon(tokenId),
+    });
+  } else if (tokenURI.includes('test-metadata')) {
+    return res.status(200).json({
+      data: getMockedMetadataSepolia(tokenId),
     });
   } else {
     const response = await fetch(tokenURI.toString(), {
