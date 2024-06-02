@@ -19,6 +19,7 @@ import { nftRentAbi } from '@/abi/NftRent';
 import { getContractAddresses } from '@/constants/addresses';
 import { Hex } from 'viem';
 import Countdown from 'react-countdown';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface MyNftProps {
   nft: MoralisResult<{ chainId: number }>;
@@ -32,6 +33,7 @@ const MyNft = ({ nft, rent }: MyNftProps) => {
   const [isReturning, setIsReturning] = useState(false);
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
+  const queryClient = useQueryClient();
 
   const chainSrc = useMemo(() => {
     return SUPPORTED_NETWORKS.find(({ chain }) => chain.id === nft.chainId)
@@ -50,7 +52,12 @@ const MyNft = ({ nft, rent }: MyNftProps) => {
         functionName: 'returnRented',
         args: [rent.id as Hex],
       });
-      await publicClient.waitForTransactionReceipt({ hash });
+      if (hash) {
+        await publicClient.waitForTransactionReceipt({ hash });
+      }
+      queryClient.invalidateQueries({ queryKey: ['my-rents'] });
+      queryClient.invalidateQueries({ queryKey: ['my-nfts'] });
+      queryClient.invalidateQueries({ queryKey: ['nfts'] });
       toast.success('NFT returned successfully');
     } catch (error) {
       console.error(error);

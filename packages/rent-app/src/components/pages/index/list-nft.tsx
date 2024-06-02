@@ -294,6 +294,7 @@ export const ListNft = ({ nft, setDialogOpen }: ListNftProps) => {
     const feeInWei = parseUnits(fee.toString(), 18);
 
     try {
+      console.log({ spender });
       if (
         spender?.toLowerCase() !==
         getContractAddresses(chainId).nftRent.toLowerCase()
@@ -306,12 +307,15 @@ export const ListNft = ({ nft, setDialogOpen }: ListNftProps) => {
         });
 
         if (approveHash) {
+          console.log({ approveHash });
           await publicClient.waitForTransactionReceipt({ hash: approveHash });
+          console.log('approved');
         }
 
         queryClient.invalidateQueries({ queryKey });
       }
 
+      console.log('listing nft');
       const hash = await writeContractAsync({
         abi: nftRentAbi,
         address: getContractAddresses(chainId).nftRent,
