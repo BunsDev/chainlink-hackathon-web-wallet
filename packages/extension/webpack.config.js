@@ -58,6 +58,11 @@ var options = {
     clean: true,
     publicPath: ASSET_PATH,
   },
+  devServer: {
+    client: {
+      overlay: false,
+    },
+  },
   module: {
     rules: [
       // {
