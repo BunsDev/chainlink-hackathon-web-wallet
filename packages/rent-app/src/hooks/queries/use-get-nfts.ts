@@ -25,7 +25,7 @@ type GetNfts = {
 
 const QUERY = gql`
   query GetNfts {
-    lists {
+    lists(where: { fulfilled: false }) {
       id
       owner
       tokenContract

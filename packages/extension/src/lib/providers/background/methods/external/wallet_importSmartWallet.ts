@@ -48,7 +48,7 @@ export const walletImportSmartWallet: BackgroundOnMessageCallback<
         },
       ],
     },
-    RuntimePostMessagePayloadType.EXTERNAL,
+    RuntimePostMessagePayloadType.INTERNAL,
     origin,
     true
   );

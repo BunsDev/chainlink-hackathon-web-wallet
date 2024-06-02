@@ -42,6 +42,8 @@ import { getContractAddresses } from '@/constants/addresses';
 import { hash } from '@/helpers/crypto';
 import { smartWalletFactoryV1Abi } from '@/abi/SmartWalletFactoryV1';
 import toast from 'react-hot-toast';
+import { useRequestUserAccountsProxyWallet } from '@/hooks/use-request-user-accounts-proxy-wallet';
+import { useRequiredNativeRent } from '@/hooks/queries/use-required-native-rent';
 
 type Nft = UseGetNftsReturnType[number]['data']['lists'][number];
 interface DiscoverCardProps {
@@ -49,11 +51,12 @@ interface DiscoverCardProps {
   chainId: number;
 }
 const DiscoverCard = ({
-  nft: { tokenId, tokenContract, rentDuration, ethFee },
+  nft: { id, tokenId, tokenContract, rentDuration, ethFee },
   chainId,
 }: DiscoverCardProps) => {
   const [parent] = useAutoAnimate();
   const { isConnected, address } = useAccount();
+  // const {} = useRequestUserAccountsProxyWallet();
   const [imageSrc, setImageSrc] = useState('https://placehold.co/300x300');
   const { chainSrc, symbol } = useMemo(() => {
     return {
@@ -67,42 +70,42 @@ const DiscoverCard = ({
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
+  const nativeLinkFee = useRequiredNativeRent();
 
   const onRentNft = async () => {
-    if (!address || isLoading || !walletClient || !publicClient) return;
+    if (!nativeLinkFee || !address || isLoading || !walletClient || !publicClient) return;
 
     setIsLoading(true);
     try {
-      const seed = new Date().getTime().toString();
-      const hashedSeed = hash(seed);
-      const salt = keccak256(
-        encodePacked(['address', 'string'], [address, hashedSeed]),
+      const baseSalt = keccak256(
+        encodePacked(['address', 'bytes32'], [address, id as '0x']),
         'hex'
       );
+
       const deploymentAddress = await publicClient.readContract({
         abi: smartWalletFactoryV1Abi,
         address: getContractAddresses(chainId).smartWalletFactory,
         functionName: 'predictCreate2Wallet',
-        args: [address, salt],
+        args: [getContractAddresses(chainId).nftRent, baseSalt],
       });
 
-      const txHash = await writeContractAsync({
-        abi: nftRentAbi,
-        address: getContractAddresses(chainId).nftRent,
-        functionName: 'rent',
-        args: [keccak256(encodePacked(['string'], [salt]))],
-        value: BigInt(ethFee) + parseUnits('0.01', 18),
-        gas: BigInt(100_000),
-      });
-      if (txHash) {
-        await publicClient.waitForTransactionReceipt({ hash: txHash });
-      }
+      // const txHash = await writeContractAsync({
+      //   abi: nftRentAbi,
+      //   address: getContractAddresses(chainId).nftRent,
+      //   functionName: 'rent',
+      //   args: [id as '0x'],
+      //   value: BigInt(ethFee) + nativeLinkFee,
+      //   gas: BigInt(2_000_000),
+      // });
+      // if (txHash) {
+      //   await publicClient.waitForTransactionReceipt({ hash: txHash });
+      // }
       toast.success('NFT rented successfully');
       const proxyWalletClient = walletClient.extend((client) => ({
         async importSmartAccount(args: { address: Address }) {
           return client.request({
             // @ts-expect-error this method is not standard
-            method: 'wallet_ImportSmartWallet',
+            method: 'wallet_importSmartWallet',
             params: [args.address],
           });
         },

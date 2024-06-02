@@ -120,6 +120,5 @@ export const ethSendRawTransaction: BackgroundOnMessageCallback<
   await storageTxHistory.set(txParsed.from!, userHistory);
   waitForTx();
 
-  // todo: return something?
-  return;
+  return txResponse.hash;
 };

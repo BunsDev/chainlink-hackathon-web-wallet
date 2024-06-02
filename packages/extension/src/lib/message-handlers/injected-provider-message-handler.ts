@@ -81,6 +81,7 @@ const handleIncomingMessage: HandleIncomingMessageFunction = (
             }
         } else {
             console.error(`Unable to process message:${message}`);
+            _provider.emit(EmitEvent.message, message);
         }
     } catch (e) {
         console.error(e);

@@ -76,7 +76,7 @@ const handleExternal: BackgroundOnMessageCallback<
 > = async (request, domain) => {
   if (!request.msg) throw getCustomError('Invalid payload');
 
-  console.log('bg: handleExternal');
+  console.log('bg: handleExternal', request.msg);
 
   if (
     request.msg.method == 'eth_accounts' ||
@@ -86,7 +86,7 @@ const handleExternal: BackgroundOnMessageCallback<
     return ethRequestAccounts(request, domain);
   } else if (request.msg.method === 'wallet_requestAccounts') {
     return walletRequestAccounts(request, domain);
-  } else if (request.msg.method === 'wallet_ImportSmartWallet') {
+  } else if (request.msg.method === 'wallet_importSmartWallet') {
     return walletImportSmartWallet(request, domain);
   } else if (request.msg.method === 'eth_sendTransaction') {
     return ethSendTransaction(request, domain);

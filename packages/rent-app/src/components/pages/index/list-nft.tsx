@@ -326,6 +326,7 @@ export const ListNft = ({ nft, setDialogOpen }: ListNftProps) => {
         await publicClient?.waitForTransactionReceipt({ hash });
       }
       queryClient.invalidateQueries({ queryKey: ['my-nfts'] });
+      queryClient.invalidateQueries({ queryKey: ['nfts'] });
       toast.success('NFT listed successfully');
     } catch (e) {
       console.error(e);
