@@ -1,5 +1,5 @@
 import { Address, zeroAddress } from 'viem';
-import { mainnet, sepolia } from 'viem/chains';
+import { mainnet, sepolia, polygon } from 'viem/chains';
 
 type ChainAddresses = {
   nftRent: Address;
@@ -14,6 +14,10 @@ export const contractAddresses = {
   [mainnet.id]: {
     nftRent: zeroAddress,
     smartWalletFactory: zeroAddress,
+  },
+  [polygon.id]: {
+    nftRent: '0x3265b195cc42afefcb58297c4e9edbeff6ec05f8',
+    smartWalletFactory: '0x4442c3302524899acf23c971afba39710925df77',
   },
 } as Record<number, ChainAddresses>;
 
