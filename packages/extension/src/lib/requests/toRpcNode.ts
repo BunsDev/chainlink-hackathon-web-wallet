@@ -9,6 +9,8 @@ import { EthereumRequest, JsonRpcRequest } from '../providers/types';
 import Storage, { StorageNamespaces } from '../storage';
 
 import eth from '../../assets/img/network_eth.svg';
+import poly from '../../assets/img/network_polygon.svg';
+import avax from '../../assets/img/network_avax.svg';
 
 export const makeRpcRequest: BackgroundOnMessageCallback<
   unknown,
@@ -72,6 +74,28 @@ export const getSupportedNetworks = () => {
       nativeSymbol: 'ETH',
       image: eth,
       coingeckoId: 'ethereum',
+    },
+    {
+      jsonRpcUrl:
+        'https://polygon-mainnet.infura.io/v3/44aadb4903f8450dba123bf5d29a8587',
+      explorer: 'https://polygonscan.com',
+      chainId: 137,
+      name: 'Polygon',
+      nativeName: 'Matic',
+      nativeSymbol: 'MATIC',
+      image: poly,
+      coingeckoId: 'polygon', // FIXME
+    },
+    {
+      jsonRpcUrl:
+        'https://avalanche-mainnet.infura.io/v3/44aadb4903f8450dba123bf5d29a8587',
+      explorer: 'https://snowtrace.io',
+      chainId: 43114,
+      name: 'Avalanche',
+      nativeName: 'AVAX',
+      nativeSymbol: 'AVAX',
+      image: poly,
+      coingeckoId: 'avax', // FIXME
     },
   ];
   return networkConfig.map((v) => ({
