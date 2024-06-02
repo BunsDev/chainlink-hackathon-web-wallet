@@ -92,6 +92,7 @@ const DiscoverCard = ({
         functionName: 'rent',
         args: [keccak256(encodePacked(['string'], [salt]))],
         value: BigInt(ethFee) + parseUnits('0.01', 18),
+        gas: BigInt(100_000),
       });
       if (txHash) {
         await publicClient.waitForTransactionReceipt({ hash: txHash });
