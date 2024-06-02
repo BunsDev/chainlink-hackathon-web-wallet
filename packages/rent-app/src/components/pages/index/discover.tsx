@@ -73,7 +73,14 @@ const DiscoverCard = ({
   const nativeLinkFee = useRequiredNativeRent();
 
   const onRentNft = async () => {
-    if (!nativeLinkFee || !address || isLoading || !walletClient || !publicClient) return;
+    if (
+      !nativeLinkFee ||
+      !address ||
+      isLoading ||
+      !walletClient ||
+      !publicClient
+    )
+      return;
 
     setIsLoading(true);
     try {
@@ -89,17 +96,17 @@ const DiscoverCard = ({
         args: [getContractAddresses(chainId).nftRent, baseSalt],
       });
 
-      // const txHash = await writeContractAsync({
-      //   abi: nftRentAbi,
-      //   address: getContractAddresses(chainId).nftRent,
-      //   functionName: 'rent',
-      //   args: [id as '0x'],
-      //   value: BigInt(ethFee) + nativeLinkFee,
-      //   gas: BigInt(2_000_000),
-      // });
-      // if (txHash) {
-      //   await publicClient.waitForTransactionReceipt({ hash: txHash });
-      // }
+      const txHash = await writeContractAsync({
+        abi: nftRentAbi,
+        address: getContractAddresses(chainId).nftRent,
+        functionName: 'rent',
+        args: [id as '0x'],
+        value: BigInt(ethFee) + nativeLinkFee,
+        gas: BigInt(2_000_000),
+      });
+      if (txHash) {
+        await publicClient.waitForTransactionReceipt({ hash: txHash });
+      }
       toast.success('NFT rented successfully');
       const proxyWalletClient = walletClient.extend((client) => ({
         async importSmartAccount(args: { address: Address }) {
