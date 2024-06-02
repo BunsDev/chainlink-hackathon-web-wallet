@@ -25,6 +25,7 @@ import { GenerateContractPage } from './pages/generate-contract-page';
 import SignTypedDataPage from './pages/sign-typed-data';
 import { Toaster } from 'react-hot-toast';
 import ImportSmartWalletDataPage from './pages/import-smart-wallet';
+import SwitchChainDataPage from './pages/switch-chain';
 
 function Popup() {
   const [queryClient] = useState(() => new QueryClient());
@@ -107,6 +108,10 @@ function Popup() {
               <Route
                 path={'/' + UIRoutes.walletImportSmartWallet.path}
                 element={<ImportSmartWalletDataPage runtimeListen={true} />}
+              ></Route>
+              <Route
+                path={'/' + UIRoutes.ethSwitchChain.path}
+                element={<SwitchChainDataPage runtimeListen={true} />}
               ></Route>
               <Route
                 path="/create-wallet"

@@ -45,6 +45,9 @@ export const getDefaultNetwork = () => {
 export const getNetwork = (name: string) => {
   return getSupportedNetworks().find((v) => v.name === name);
 };
+export const getNetworkByChainId = (id: string) => {
+  return getSupportedNetworks().find((v) => v.chainId === parseInt(id, 16));
+};
 export const getSupportedNetworks = () => {
   // todo: take this from local storage
   const networkConfig = [

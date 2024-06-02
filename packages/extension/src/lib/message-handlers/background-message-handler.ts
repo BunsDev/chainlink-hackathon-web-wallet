@@ -34,6 +34,7 @@ import { convertTxToAutoExecute } from '../providers/background/methods/internal
 import { getDeploySmartWalletContractTx } from '../providers/background/methods/internal/getDeploySmartWalletContractTx';
 import { importSmartWallet } from '../providers/background/methods/internal/importSmartWallet';
 import { walletImportSmartWallet } from '../providers/background/methods/external/wallet_importSmartWallet';
+import { walletSwitchEthereumChain } from '../providers/background/methods/external/wallet_switchEthereumChain';
 
 export enum InternalBgMethods {
   IS_LOCKED = 'isLocked',
@@ -88,6 +89,8 @@ const handleExternal: BackgroundOnMessageCallback<
     return walletRequestAccounts(request, domain);
   } else if (request.msg.method === 'wallet_importSmartWallet') {
     return walletImportSmartWallet(request, domain);
+  } else if (request.msg.method === 'wallet_switchEthereumChain') {
+    return walletSwitchEthereumChain(request, domain);
   } else if (request.msg.method === 'eth_sendTransaction') {
     return ethSendTransaction(request, domain);
   } else if (request.msg.method === 'eth_sendRawTransaction') {
